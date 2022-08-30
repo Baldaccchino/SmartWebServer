@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onBeforeUnmount } from "vue";
 import { api } from "./api/api";
-import { MountStatusApi } from "./api/control";
+import { MountControl } from "./api/control";
 import { type MountStatus } from "./types";
 import Navbar from "./components/Navbar.vue";
 import LoadingSpinner from "./components/LoadingSpinner.vue";
@@ -11,7 +11,7 @@ import { toast } from "./utils/toast";
 
 const status = ref<null | MountStatus>(null);
 
-const control = new MountStatusApi(api, (error) =>
+const control = new MountControl(api, (error) =>
   toast(error, "error")
 ).startHeartbeat((s) => (status.value = s));
 

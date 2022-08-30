@@ -35,7 +35,7 @@ Widget(width="half")
 <script setup lang="ts">
 import Widget from "../components/Widget.vue";
 import { type ValidMountStatus, mountHasCompensation } from "../types";
-import { MountStatusApi } from "../api/control";
+import { MountControl } from "../api/control";
 import { computed, ref } from "vue";
 import ControlButton from "../components/ControlButton.vue";
 import Modal from "../components/Modal.vue";
@@ -45,7 +45,7 @@ import { ClockIcon } from "@heroicons/vue/24/outline";
 const confirm = ref<InstanceType<typeof Modal> | null>(null);
 
 const props = defineProps<{
-  control: MountStatusApi;
+  control: MountControl;
   status: ValidMountStatus;
 }>();
 

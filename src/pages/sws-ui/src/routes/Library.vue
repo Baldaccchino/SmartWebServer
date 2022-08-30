@@ -94,7 +94,7 @@ import { stars, type Star, starTypes, type StarType } from "../utils/stars";
 import Widget from "../components/Widget.vue";
 import InputField from "../components/InputField.vue";
 import { computed, ref, onMounted, reactive } from "vue";
-import { MountStatusApi } from "../api/control";
+import { MountControl } from "../api/control";
 import ControlButton from "../components/ControlButton.vue";
 import Fuse from "fuse.js";
 import { RecentStars } from "../utils/recentStars";
@@ -138,7 +138,7 @@ const recentStars = new RecentStars(api, (stars) => {
 });
 
 const props = defineProps<{
-  control: MountStatusApi;
+  control: MountControl;
 }>();
 
 const manualGoToName = ref("");

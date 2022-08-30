@@ -119,12 +119,12 @@ import { ExclamationCircleIcon } from "@heroicons/vue/24/solid";
 import { RouterLink } from "vue-router";
 import type { ValidMountStatus } from "../types";
 import logo from "../assets/onstep.png";
-import { MountStatusApi } from "../api/control";
+import { MountControl } from "../api/control";
 import Menu from "./Menu.vue";
 
 const props = defineProps<{
   status: ValidMountStatus;
-  control: MountStatusApi;
+  control: MountControl;
 }>();
 
 const navigation: {

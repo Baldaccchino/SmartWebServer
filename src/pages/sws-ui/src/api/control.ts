@@ -49,7 +49,7 @@ import { Commander } from "./commander";
 import { Status } from "./status";
 import { Search } from "./search";
 
-export class MountStatusApi {
+export class MountControl {
   private heartbeat?: number;
   private onStatus?: (status: MountStatus) => void;
   private status?: MountStatus;

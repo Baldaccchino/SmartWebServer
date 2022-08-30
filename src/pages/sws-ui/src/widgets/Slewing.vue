@@ -106,12 +106,12 @@ import {
   type ValidMountStatus,
   type MaxSlewSpeed,
 } from "../types";
-import { MountStatusApi } from "../api/control";
+import { MountControl } from "../api/control";
 import { computed, ref, onBeforeUnmount } from "vue";
 import type { Search } from "../api/search";
 
 const props = defineProps<{
-  control: MountStatusApi;
+  control: MountControl;
   status: ValidMountStatus;
 }>();
 

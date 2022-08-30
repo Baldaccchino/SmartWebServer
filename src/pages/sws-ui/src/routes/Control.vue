@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import { MountStatusApi } from "../api/control";
+import { MountControl } from "../api/control";
 import { type ValidMountStatus } from "../types";
 import Tracking from "../widgets/Tracking.vue";
 import Parking from "../widgets/Parking.vue";
@@ -40,7 +40,7 @@ import Alignment from "../widgets/Alignment.vue";
 import Columns from "../components/Columns.vue";
 
 defineProps<{
-  control: MountStatusApi;
+  control: MountControl;
   status: ValidMountStatus;
 }>();
 </script>

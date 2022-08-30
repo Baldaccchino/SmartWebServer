@@ -111,7 +111,7 @@ Columns
 
 <script setup lang="ts">
 import { computed, onMounted, ref, toRaw } from "vue";
-import { MountStatusApi } from "../api/control";
+import { MountControl } from "../api/control";
 import ControlButton from "../components/ControlButton.vue";
 import type { ValidMountStatus } from "../types";
 import { formatDate } from "../utils/formatDate";
@@ -123,7 +123,7 @@ import Columns from "../components/Columns.vue";
 import Heading from "../components/Heading.vue";
 
 const props = defineProps<{
-  control: MountStatusApi;
+  control: MountControl;
   status: ValidMountStatus;
 }>();
 

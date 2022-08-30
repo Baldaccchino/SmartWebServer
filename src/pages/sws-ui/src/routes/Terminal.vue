@@ -33,13 +33,13 @@ Columns
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import InputField from "../components/InputField.vue";
-import { MountStatusApi } from "../api/control";
+import { MountControl } from "../api/control";
 import ControlButton from "../components/ControlButton.vue";
 import Widget from "../components/Widget.vue";
 import Columns from "../components/Columns.vue";
 
 const props = defineProps<{
-  control: MountStatusApi;
+  control: MountControl;
 }>();
 
 const cmd = ref("");

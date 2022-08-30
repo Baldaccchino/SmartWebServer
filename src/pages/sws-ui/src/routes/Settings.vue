@@ -138,7 +138,7 @@ Columns
 
 <script setup lang="ts">
 import { ref, computed, onMounted, toRaw } from "vue";
-import { MountStatusApi } from "../api/control";
+import { MountControl } from "../api/control";
 import { type ValidMountStatus, mountHasCompensation } from "../types";
 import Widget from "../components/Widget.vue";
 import Toggles from "../components/Toggles.vue";
@@ -149,7 +149,7 @@ import { objectsEqual } from "../utils/compareObjects";
 import Columns from "../components/Columns.vue";
 
 const props = defineProps<{
-  control: MountStatusApi;
+  control: MountControl;
   status: ValidMountStatus;
 }>();
 
