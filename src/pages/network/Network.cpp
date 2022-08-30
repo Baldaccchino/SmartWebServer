@@ -62,6 +62,7 @@ void handleNetwork() {
 
   if (restartRequired) {
     restartRequired = false;
+    wifiManager.restartRequired = true;
     data.concat(FPSTR(html_reboot));
   } else
   if (loginRequired) {

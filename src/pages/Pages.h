@@ -6,6 +6,13 @@
 #include "../../Config.h"
 #include "../../Extended.config.h"
 
+void handleNewUi();
+void ajaxWifiNetworks();
+void ajaxScanNetworks();
+void ajaxRunCommand();
+void ajaxRunCommands();
+void ajaxLibrary();
+
 void handleRoot();
 void indexAjaxGet();
 void indexAjax();
