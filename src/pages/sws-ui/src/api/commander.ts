@@ -1,5 +1,33 @@
 import { API } from "./api";
 
+class Command {
+  private cmdKey;
+  constructor(
+    public readonly command: string,
+    private returnKey: string,
+    private index: number
+  ) {
+    this.cmdKey = `cmd_${this.index}`;
+  }
+
+  get commandPayload() {
+    return [this.cmdKey, this.command];
+  }
+
+  generateResponse(response: Record<string, string>) {
+    return [this.returnKey, response[this.cmdKey] ?? ""];
+  }
+
+  getLogResponse(response: Record<string, string>) {
+    return {
+      command: this.command,
+      response: response[this.cmdKey],
+      system: true,
+      date: new Date(),
+    };
+  }
+}
+
 export class Commander {
   public commandLogs: {
     command: string;
@@ -12,38 +40,33 @@ export class Commander {
 
   async sendCommands<T extends string>(
     cmds: Record<T, string>,
-    noLog: "log" | "nolog" = "log"
+    shouldLog: "log" | "nolog" = "log"
   ): Promise<Record<T, string> & { swsVersion: string }> {
-    Object.values(cmds).forEach((cmd) => this.validateCommand(cmd as string));
-
-    const returnMap: Record<string, T> = Object.fromEntries(
-      Object.keys(cmds).map((key, i) => [`cmd_${i}`, key as T])
-    );
+    // generate command classes that will be hydrated with responses later
+    const commands = Object.entries(cmds).map(([returnKey, command], i) => {
+      this.validateCommand(command as T);
+      return new Command(command as T, returnKey, i);
+    });
 
     const response = await this.api.get<Record<string, string>>(
       "ajax/cmds",
-      Object.fromEntries(
-        Object.entries(cmds).map(([key, cmd], i) => [`cmd_${i}`, cmd])
-      )
+      Object.fromEntries(commands.map((c) => c.commandPayload))
     );
 
-    const commandResponses = Object.entries(response).map(([_cmd_num, v]) => ({
-      command: cmds[returnMap[_cmd_num]],
-      response: v,
-      system: true,
-      date: new Date(),
-    }));
+    const commandResponse = Object.fromEntries(
+      commands.map((c) => c.generateResponse(response))
+    );
 
-    if (noLog === "log") {
-      this.commandLogs.unshift(...commandResponses);
+    const commandLogs = commands.map((c) => c.getLogResponse(response));
+
+    if (shouldLog === "log") {
+      this.commandLogs.unshift(...commandLogs);
     }
 
     const swsVersion = response.sws_version;
 
     return {
-      ...(Object.fromEntries(
-        Object.entries(returnMap).map(([cmd, key]) => [key, response[cmd]])
-      ) as Record<T, string>),
+      ...commandResponse,
       swsVersion,
     };
   }
