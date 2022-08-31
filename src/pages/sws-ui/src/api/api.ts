@@ -23,7 +23,7 @@ export class API {
       this._onNetworkUp?.();
       return response;
     } catch (e) {
-      if ((e as AxiosError)?.code == "ECONNABORTED") {
+      if (["ERR_NETWORK", "ECONNABORTED"].includes((e as AxiosError)?.code!)) {
         this._onNetworkDown?.();
       }
       throw e;
