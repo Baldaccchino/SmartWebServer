@@ -72,9 +72,6 @@ Menu.relative.inline-block.text-left(
           QuestionMarkCircleIcon.h-5.w-5.mr-5
           | Help
 
-
-
-
 </template>
 
 <script setup lang="ts">

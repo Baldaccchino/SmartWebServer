@@ -1,20 +1,43 @@
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosResponse, AxiosError } from "axios";
 
 export class API {
   private axios;
+  private _onNetworkDown?: () => void;
+  private _onNetworkUp?: () => void;
   constructor() {
     this.axios = axios.create({
       baseURL: `${import.meta.env.VITE_API}`,
+      timeout: 5000,
     });
   }
 
-  getWithoutParse(url: string, params?: object) {
-    return this.axios.get<string>(url, {
-      params: {
-        ...(params ?? {}),
-        cache: Date.now(),
-      },
-    });
+  async getWithoutParse(url: string, params?: object) {
+    try {
+      const response = await this.axios.get<string>(url, {
+        params: {
+          ...(params ?? {}),
+          cache: Date.now(),
+        },
+      });
+
+      this._onNetworkUp?.();
+      return response;
+    } catch (e) {
+      if ((e as AxiosError)?.code == "ECONNABORTED") {
+        this._onNetworkDown?.();
+      }
+      throw e;
+    }
+  }
+
+  onNetworkDown(fn: () => void) {
+    this._onNetworkDown = fn;
+    return this;
+  }
+
+  onNetworkUp(fn: () => void) {
+    this._onNetworkUp = fn;
+    return this;
   }
 
   async get<T>(url: string, params?: object) {

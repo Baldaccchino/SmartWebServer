@@ -9,26 +9,39 @@ import LoadingSpinner from "./components/LoadingSpinner.vue";
 import FullScreen from "./components/FullScreen.vue";
 import SerialDown from "./components/SerialDown.vue";
 import { toast } from "./utils/toast";
+import NetworkDown from "./components/NetworkDown.vue";
 
 const router = useRouter();
-
 const status = ref<null | MountStatus>(null);
+const networkError = ref(false);
 
-const control = new MountControl(api, (error) => toast(error, "error"))
+const control = new MountControl(
+  api
+    .onNetworkDown(() => {
+      networkError.value = true;
+    })
+    .onNetworkUp(() => {
+      networkError.value = false;
+    }),
+  (error) => toast(error, "error")
+)
   .startHeartbeat((s) => (status.value = s))
   .onAfterGoto(() => router.push({ name: "control" }));
 onBeforeUnmount(() => control.stopHeartbeat());
 </script>
 
 <template lang="pug">
-FullScreen(v-if="!status")
+FullScreen(v-if="networkError")
+  .flex.justify-center
+    NetworkDown
+
+FullScreen(v-else-if="!status")
   LoadingSpinner
     | connecting..
 
 FullScreen(v-else-if="status.type === 'invalid'")
   .flex.justify-center
     SerialDown
-
 
 .min-h-screen.flex.flex-col(v-else-if="status")
   Navbar.mb-5(
