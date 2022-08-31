@@ -9,7 +9,7 @@
       template(#subheading)
         slot(name="subheading")
 
-    .flex.flex-col.grow.space-y-4.mx-0.xl_mx-10.mb-10
+    .flex.flex-col.grow.space-y-4.mx-0.xl_mx-10
       slot
 </template>
 

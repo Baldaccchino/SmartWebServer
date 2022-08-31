@@ -10,7 +10,10 @@ Widget
 
     p If you just rebooted OnStep please wait for several seconds for everything to startup again, then check to be sure you're still connected to WiFi.
 
+    p SmartWebServer will attempt to reconnect while you wait. 
+
     p You may try refreshing this page or rebooting OnStep and SWS.
+    br
 
 </template>
 <script setup lang="ts">
