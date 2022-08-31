@@ -46,7 +46,7 @@ import { Star } from "../database";
 import { objectsEqual } from "../utils/compareObjects";
 import { Mutex } from "async-mutex";
 import { OnStep } from "./commander";
-import { Status } from "./status";
+import { OnStepStatus } from "./status";
 import { Search } from "./search";
 
 export class MountControl {
@@ -54,26 +54,26 @@ export class MountControl {
   private onStatus?: (status: MountStatus) => void;
   private status?: MountStatus;
   private mutex;
-  private commander;
-  private _status;
+  private onStep;
+  private onStepStatus;
   private _onAfterGoto?: () => void;
 
   constructor(private api: API, private onError: (error: string) => void) {
     this.mutex = new Mutex();
-    this.commander = new OnStep(api, onError);
-    this._status = new Status(this.commander);
+    this.onStep = new OnStep(api, onError);
+    this.onStepStatus = new OnStepStatus(this.onStep);
   }
 
   public get commandLogs() {
-    return this.commander.commandLogs;
+    return this.onStep.commandLogs;
   }
 
   public clearLogs() {
-    this.commander.commandLogs = [];
+    this.onStep.commandLogs = [];
   }
 
   makeSearcher() {
-    return new Search(this.commander);
+    return new Search(this.onStep);
   }
 
   onAfterGoto(fn: () => void) {
@@ -109,7 +109,7 @@ export class MountControl {
     onLoading?.(true);
 
     await this.mutex.runExclusive(async () => {
-      this.status = await this._status.getStatus();
+      this.status = await this.onStepStatus.getStatus();
 
       if (this.status.lastError) {
         this.onError(`A background error occured! ${this.status.lastError}`);
@@ -337,11 +337,11 @@ export class MountControl {
   }
 
   async sendCommands<T extends string>(cmds: Record<T, string>) {
-    return this.commander.sendCommands(cmds);
+    return this.onStep.sendCommands(cmds);
   }
 
   async sendCommand(cmd: string, system = true) {
-    return this.commander.sendCommand(cmd, system);
+    return this.onStep.sendCommand(cmd, system);
   }
 
   async stopTracking() {
