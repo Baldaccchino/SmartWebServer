@@ -53,7 +53,7 @@ export function getBasicStatus(test: (char: string) => boolean) {
   status.parking = test("I");
   status.parkFail = test("F");
 
-  status.home = test("H");
+  status.home = test("H") && !status.parked;
   status.homing = test("h");
   status.guiding = test("g");
   status.waitingAtHome = test("w");
