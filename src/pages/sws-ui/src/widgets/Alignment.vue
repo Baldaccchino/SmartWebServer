@@ -57,9 +57,7 @@ const loading = ref<null | number>(null);
 async function accept() {
   loading.value = alignmentStars.value;
   try {
-    await props.control
-      .onAfterGoto(() => router.push({ name: "control" }))
-      .nextStarAlignment();
+    await props.control.nextStarAlignment();
 
     if (currentStar.value < alignmentStars.value + 1) {
       router.push({ name: "library" });
@@ -72,9 +70,7 @@ async function accept() {
 async function align(stars: number) {
   loading.value = stars;
   try {
-    await props.control
-      .onAfterGoto(() => router.push({ name: "control" }))
-      .startAlignment(stars);
+    await props.control.startAlignment(stars);
     router.push({ name: "library" });
   } finally {
     loading.value = null;

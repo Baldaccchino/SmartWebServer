@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onBeforeUnmount } from "vue";
+import { useRouter } from "vue-router";
 import { api } from "./api/api";
 import { MountControl } from "./api/control";
 import { type MountStatus } from "./types";
@@ -9,12 +10,13 @@ import FullScreen from "./components/FullScreen.vue";
 import SerialDown from "./components/SerialDown.vue";
 import { toast } from "./utils/toast";
 
+const router = useRouter();
+
 const status = ref<null | MountStatus>(null);
 
-const control = new MountControl(api, (error) =>
-  toast(error, "error")
-).startHeartbeat((s) => (status.value = s));
-
+const control = new MountControl(api, (error) => toast(error, "error"))
+  .startHeartbeat((s) => (status.value = s))
+  .onAfterGoto(() => router.push({ name: "control" }));
 onBeforeUnmount(() => control.stopHeartbeat());
 </script>
 
