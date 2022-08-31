@@ -174,7 +174,7 @@ export function getMount(response: StatusFetchResponse): Mount {
   };
 }
 
-export class Status {
+export class OnStepStatus {
   constructor(private commander: OnStep) {}
 
   async getStatus(): Promise<MountStatus> {
