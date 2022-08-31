@@ -28,7 +28,7 @@ class Command {
   }
 }
 
-export class Commander {
+export class OnStep {
   public commandLogs: {
     command: string;
     response: string;

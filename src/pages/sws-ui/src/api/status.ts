@@ -1,4 +1,4 @@
-import type { Commander } from "./commander";
+import type { OnStep } from "./commander";
 import type { Mount, MountStatus, RateComp } from "../types";
 import {
   onstepFirmwareCommand,
@@ -67,7 +67,7 @@ const statusCommands = {
   meridianStatus: meridianStatusCommand,
 };
 
-async function fetchStatus(commander: Commander) {
+async function fetchStatus(commander: OnStep) {
   const { isValid } = await commander.sendCommands(
     { isValid: ":GVP#" },
     "nolog"
@@ -175,7 +175,7 @@ export function getMount(response: StatusFetchResponse): Mount {
 }
 
 export class Status {
-  constructor(private commander: Commander) {}
+  constructor(private commander: OnStep) {}
 
   async getStatus(): Promise<MountStatus> {
     const response = await fetchStatus(this.commander);

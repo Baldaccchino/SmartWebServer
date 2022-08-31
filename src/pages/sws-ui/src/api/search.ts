@@ -1,11 +1,11 @@
 import { buildSlewCommand } from "../onstep/commands";
 import { Direction } from "../types";
-import { Commander } from "./commander";
+import { OnStep } from "./commander";
 
 export class Search {
   private stopped = false;
   private timeout?: number;
-  constructor(private commander: Commander) {}
+  constructor(private commander: OnStep) {}
 
   async search() {
     // execute a series of search patterns roughly approximating a box.

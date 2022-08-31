@@ -45,7 +45,7 @@ import {
 import { Star } from "../database";
 import { objectsEqual } from "../utils/compareObjects";
 import { Mutex } from "async-mutex";
-import { Commander } from "./commander";
+import { OnStep } from "./commander";
 import { Status } from "./status";
 import { Search } from "./search";
 
@@ -60,7 +60,7 @@ export class MountControl {
 
   constructor(private api: API, private onError: (error: string) => void) {
     this.mutex = new Mutex();
-    this.commander = new Commander(api, onError);
+    this.commander = new OnStep(api, onError);
     this._status = new Status(this.commander);
   }
 
