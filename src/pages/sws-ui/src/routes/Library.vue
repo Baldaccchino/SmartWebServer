@@ -6,7 +6,7 @@ Columns
 
   Widget
     template(#heading) Find an object
-    template(#subheading) Premade library & recent GoTo's
+    template(#subheading) Premade library & manual GoTo's
 
     .flex.justify-center
       Toggles(
@@ -136,6 +136,7 @@ const removing = ref<string | null>(null);
 
 watch(libraryType, () => {
   localStorage.setItem("libraryType", libraryType.value);
+  searchValue.value = "";
 });
 
 watch(searchValue, () => {
