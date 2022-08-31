@@ -8,9 +8,21 @@ Columns
     template(#heading) Find an object
     template(#subheading) Premade library & recent GoTo's
 
+    .flex.justify-center
+      Toggles(
+        :options=`[
+          { title: 'All', value: 'all' },
+          { title: 'Manual', value: 'manual' },
+          { title: 'Bright Stars', value: 'brightStars' },
+          { title: 'Messier', value: 'messier' },
+        ]`
+        :value="libraryType"
+        :on-change="v => libraryType = v"
+      )
+
     InputField.mb-2(
       v-model="searchValue"
-      label="Filter stars"
+      label="Filter objects"
       placeholder="Betelgeuse"
     )
 
@@ -83,24 +95,29 @@ Columns
       :loading="loading === manualGoTo.name"
     ) GoTo coordinates
 
-
-
-
 </template>
 
 <script setup lang="ts">
+import { computed, ref, onMounted, reactive, watch } from "vue";
+import Fuse from "fuse.js";
 import { api } from "../api/api";
-import { stars, type Star, starTypes, type StarType } from "../utils/stars";
+import { MountControl } from "../api/control";
+import { RecentStars } from "../utils/recentStars";
+import { catalog, type Star, starTypes, type StarType } from "../database";
+
 import Widget from "../components/Widget.vue";
 import InputField from "../components/InputField.vue";
-import { computed, ref, onMounted, reactive } from "vue";
-import { MountControl } from "../api/control";
 import ControlButton from "../components/ControlButton.vue";
-import Fuse from "fuse.js";
-import { RecentStars } from "../utils/recentStars";
 import SelectBox from "../components/SelectBox.vue";
 import Modal from "../components/Modal.vue";
 import Columns from "../components/Columns.vue";
+import Toggles from "../components/Toggles.vue";
+
+const { messier, brightStars } = catalog;
+
+const props = defineProps<{
+  control: MountControl;
+}>();
 
 const starSelectTypes = Object.entries(starTypes).map(([value, name]) => ({
   name,
@@ -108,12 +125,25 @@ const starSelectTypes = Object.entries(starTypes).map(([value, name]) => ({
   checked: false,
 }));
 
-const libraryStars = ref<Star[]>([]);
+const libraryType = ref<"brightStars" | "messier" | "all" | "manual">(
+  (localStorage.getItem("libraryType") as any) ?? "all"
+);
+const savedObjects = ref<Star[]>([]);
+const searchValue = ref(localStorage.getItem("searchValue") ?? "");
+const loading = ref<string | null | symbol>(null);
+const confirmRemove = ref<InstanceType<typeof Modal>>(null!);
+const removing = ref<string | null>(null);
+
+watch(libraryType, () => {
+  localStorage.setItem("libraryType", libraryType.value);
+});
+
+watch(searchValue, () => {
+  localStorage.setItem("searchValue", searchValue.value);
+});
 
 function makeSearchableStars(additionalStars: Star[]) {
-  libraryStars.value = additionalStars;
-
-  return new Fuse([...additionalStars, ...stars], {
+  return new Fuse([...additionalStars, ...brightStars, ...messier], {
     threshold: 0.3,
     keys: ["name"],
   });
@@ -132,14 +162,11 @@ const manualStarSelectType = ref<{
 });
 
 const recentStars = new RecentStars(api, (stars) => {
+  savedObjects.value = stars;
   searchableStars.value = makeSearchableStars(
     stars.map((s) => ({ ...s, source: "manual" }))
   );
 });
-
-const props = defineProps<{
-  control: MountControl;
-}>();
 
 const manualGoToName = ref("");
 const manualGoTo = reactive<Star>({
@@ -147,20 +174,29 @@ const manualGoTo = reactive<Star>({
   ra: "",
   dec: "",
   type: "STR",
-  source: "lib",
+  source: "manual",
 });
 
 const filteredStars = computed<Star[]>(() => {
-  return searchValue.value
-    ? searchableStars.value.search(searchValue.value).map((i) => i.item)
-    : [...libraryStars.value, ...stars];
+  const searched = searchableStars.value
+    .search(searchValue.value)
+    .map((i) => i.item);
+
+  const allTargets = [...savedObjects.value, ...brightStars, ...messier];
+
+  // search should always show everything
+  if (searchValue.value) {
+    return searched;
+  }
+
+  // otherwise just show the selected group
+  return allTargets.filter((s) => {
+    if (libraryType.value === "all") {
+      return true;
+    }
+    return s.source === libraryType.value;
+  });
 });
-
-const searchValue = ref("");
-const loading = ref<string | null | symbol>(null);
-
-const confirmRemove = ref<InstanceType<typeof Modal>>(null!);
-const removing = ref<string | null>(null);
 
 async function removeFromLib(star: Star) {
   if (!(await confirmRemove.value.awaitAnswer(star))) {

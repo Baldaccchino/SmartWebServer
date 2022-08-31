@@ -1,16 +1,17 @@
 import { API } from "../api/api";
-import { Star } from "./stars";
+import { Star } from "../database";
 import { clone } from "../utils/compareObjects";
 
 const updateLibraryEndpoint = "mount-ajax-get.txt";
 const getLibraryEndpoint = "ajax/library";
+
 let cachedRecents: Star[] = [];
 
 export class RecentStars {
   // use the last catalog in memory
-  private catalog = 15;
-  private catalogType = "$WebRecents";
-  private list: Star[] = cachedRecents;
+  private recentCatalog = 15;
+  private recentCatalogType = "$WebRecents";
+  private recentList: Star[] = cachedRecents;
   private onRefresh?: (list: Star[]) => void;
 
   constructor(private api: API, onRefresh?: (list: Star[]) => void) {
@@ -18,28 +19,28 @@ export class RecentStars {
   }
 
   getRecentStars(): Star[] {
-    return this.list;
+    return this.recentList;
   }
 
   addStar(star: Star) {
-    this.list.push(star);
+    this.recentList.push(star);
     return this;
   }
 
   removeStar(matcher: (star: Star) => boolean) {
-    this.list = this.list.filter((star) => !matcher(star));
+    this.recentList = this.recentList.filter((star) => !matcher(star));
     return this.storeList();
   }
 
   async storeList() {
     await this.api.getWithoutParse(updateLibraryEndpoint, {
-      lib_index: this.catalog,
+      lib_index: this.recentCatalog,
     });
 
     await this.api.get(updateLibraryEndpoint, {
       cat_upload: [
-        this.catalogType,
-        ...this.list.map((item) =>
+        this.recentCatalogType,
+        ...this.recentList.map((item) =>
           [item.name, item.type, item.ra, item.dec].join(",")
         ),
       ].join("\n"),
@@ -47,20 +48,27 @@ export class RecentStars {
   }
 
   async refreshList() {
-    this.list =
+    this.recentList = parseResponse(
       (
         await this.api.getWithoutParse(getLibraryEndpoint, {
-          cat: this.catalog,
+          cat: this.recentCatalog,
         })
       ).data
-        .split("\n")
-        .filter(Boolean)
-        .map((i) => i.split(","))
-        .map(([name, type, ra, dec]) => {
-          return { name, type, ra, dec } as Star;
-        }) ?? [];
+    );
 
-    cachedRecents = clone(this.list);
-    this.onRefresh?.(this.list);
+    cachedRecents = clone(this.recentList);
+    this.onRefresh?.(this.recentList);
   }
+}
+
+function parseResponse(r: string) {
+  return (
+    r
+      .split("\n")
+      .filter(Boolean)
+      .map((i) => i.split(","))
+      .map(([name, type, ra, dec]) => {
+        return { name, type, ra, dec, source: "manual" } as Star;
+      }) ?? []
+  );
 }

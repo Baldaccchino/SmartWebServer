@@ -42,7 +42,7 @@ import {
   unparkCommand,
 } from "../onstep/commands";
 
-import { Star } from "../utils/stars";
+import { Star } from "../database";
 import { objectsEqual } from "../utils/compareObjects";
 import { Mutex } from "async-mutex";
 import { Commander } from "./commander";

@@ -7,7 +7,7 @@ import type {
   MountWithCompensation,
   TrackingModes,
 } from "../types";
-import { Star } from "../utils/stars";
+import { Star } from "../database";
 import { objectsEqual } from "../utils/compareObjects";
 
 export type TrackingRateAdjustment = "faster" | "slower" | "reset";
