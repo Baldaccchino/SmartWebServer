@@ -4,6 +4,7 @@ export class API {
   private axios;
   private _onNetworkDown?: () => void;
   private _onNetworkUp?: () => void;
+  private _onVersionAvailable?: (v: string) => void;
   constructor() {
     this.axios = axios.create({
       baseURL: `${import.meta.env.VITE_API}`,
@@ -20,6 +21,11 @@ export class API {
         },
       });
 
+      const version = response.headers["x-sws-version"];
+      if (version) {
+        this._onVersionAvailable?.(version);
+      }
+
       this._onNetworkUp?.();
       return response;
     } catch (e) {
@@ -28,6 +34,11 @@ export class API {
       }
       throw e;
     }
+  }
+
+  onVersionAvailable(fn: (v: string) => void) {
+    this._onVersionAvailable = fn;
+    return this;
   }
 
   onNetworkDown(fn: () => void) {
