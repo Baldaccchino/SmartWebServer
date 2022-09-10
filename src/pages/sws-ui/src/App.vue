@@ -16,9 +16,7 @@ const router = useRouter();
 const networkError = ref(false);
 const status = ref<MountStatus | null>(null);
 
-function onError(e: string) {
-  toast(e, "error");
-}
+const onError = (e: string) => toast(e, "error");
 
 api
   .onNetworkDown(() => {
@@ -28,7 +26,9 @@ api
     networkError.value = false;
   });
 
-const onStep = new OnStep(api, onError, (s) => (status.value = s));
+const onStep = new OnStep(api, onError).onStatusUpdate(
+  (s) => (status.value = s)
+);
 onBeforeUnmount(() => onStep.disconnect());
 
 const control = new MountControl(api, onStep, onError)

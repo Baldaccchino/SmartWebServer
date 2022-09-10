@@ -1,5 +1,5 @@
 import { Mutex } from "async-mutex";
-import { MountStatus } from "../types";
+import { Mount, MountStatus } from "../types";
 import { API } from "./api";
 import { Command } from "./command";
 import { OnStepStatus } from "./onStepStatus";
@@ -14,15 +14,21 @@ export class OnStep {
 
   private _status;
   private mutex;
+  private _onStatus?: (status: MountStatus) => void;
 
-  constructor(
-    private api: API,
-    private onError: (error: string) => void,
-    onStatus: (status: MountStatus) => void
-  ) {
+  constructor(private api: API, private onError: (error: string) => void) {
     api.onVersionAvailable((v) => this._status.setSwsVersion(v));
-    this._status = new OnStepStatus(this, onStatus).startHeartbeat();
+
+    this._status = new OnStepStatus(this, (status) =>
+      this._onStatus?.(status)
+    ).startHeartbeat();
+
     this.mutex = new Mutex();
+  }
+
+  onStatusUpdate(fn: (status: MountStatus) => void) {
+    this._onStatus = fn;
+    return this;
   }
 
   disconnect() {
