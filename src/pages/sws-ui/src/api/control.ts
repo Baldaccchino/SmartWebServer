@@ -45,8 +45,8 @@ import {
 import { Star } from "../database";
 import { objectsEqual } from "../utils/compareObjects";
 import { Mutex } from "async-mutex";
-import { OnStep } from "./commander";
-import { OnStepStatus } from "./status";
+import { OnStep } from "./onStep";
+import { OnStepStatus } from "./onStepStatus";
 import { Search } from "./search";
 
 export class MountControl {
@@ -58,7 +58,7 @@ export class MountControl {
   private onStepStatus;
   private _onAfterGoto?: () => void;
 
-  constructor(private api: API, private onError: (error: string) => void) {
+  constructor(api: API, private onError: (error: string) => void) {
     this.mutex = new Mutex();
     this.onStep = new OnStep(api, onError);
     this.onStepStatus = new OnStepStatus(this.onStep);
