@@ -6,21 +6,6 @@ Widget(width="full")
     p Use the center button to sync on a star if you've adjusted the location.
 
   .flex.justify-center
-    .w-full.flex.justify-center(class="md_w-1/2 xl_w-1/3")
-      //- 
-        todo: this feature is kinda weird.
-        ControlButton(
-          @click="doSearch"
-          :disabled="!canSlew"
-          v-if="!search"
-        ) Search
-
-        ControlButton(
-          @click="stopSearch"
-          v-else
-        ) Stop search
-
-  .flex.justify-center
     .grid.grid-cols-3.gap-4.select-none.mb-8.w-full(class="md_w-1/2 xl_w-1/3")
       ControlButton(
         @mousedown="slew(['n', 'e'])"
@@ -106,8 +91,7 @@ import {
   type MaxSlewSpeed,
 } from "../types";
 import { MountControl } from "../onstep/mountControl";
-import { computed, ref, onBeforeUnmount } from "vue";
-import type { Search } from "../onstep/actions/search";
+import { computed, ref } from "vue";
 
 const props = defineProps<{
   control: MountControl;
@@ -140,24 +124,8 @@ const maxSlewOptions = ref([
     value: "vf",
   },
 ]);
-const search = ref<Search | null>(null);
 
-function doSearch() {
-  search.value = props.control.makeSearcher();
-  search.value.search();
-}
-
-function stopSearch() {
-  search.value?.stop();
-  search.value = null;
-}
-
-onBeforeUnmount(() => stopSearch());
 const canSlew = computed(() => {
-  if (search.value) {
-    return false;
-  }
-
   return props.status.status.tracking || props.status.status.aligning;
 });
 
@@ -180,10 +148,10 @@ async function sync() {
 }
 
 function slew(dirs: Direction[]) {
-  return Promise.all(dirs.map((dir) => props.control.slew(dir, true)));
+  return props.control.slew(dirs, true);
 }
 function stop(dirs: Direction[]) {
-  return Promise.all(dirs.map((dir) => props.control.slew(dir, false)));
+  return props.control.slew(dirs, false);
 }
 
 function speedChange(speed: number) {

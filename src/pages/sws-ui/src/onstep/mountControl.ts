@@ -42,7 +42,6 @@ import {
 import { Star } from "../database";
 import { objectsEqual } from "../utils/compareObjects";
 import type { OnStep } from "./onStep";
-import { Search } from "./actions/search";
 
 export class MountControl {
   private _onAfterGoto?: () => void;
@@ -59,11 +58,6 @@ export class MountControl {
   public clearLogs() {
     this.onStep.commandLogs = [];
   }
-
-  makeSearcher() {
-    return new Search(this.onStep);
-  }
-
   onAfterGoto(fn: () => void) {
     this._onAfterGoto = fn;
     return this;
@@ -77,8 +71,10 @@ export class MountControl {
     return this.onStep.status;
   }
 
-  slew(dir: Direction, startStop: boolean) {
-    return this.onStep.sendCommand(buildSlewCommand(dir, startStop));
+  slew(dirs: Direction[], startStop: boolean) {
+    return this.onStep.sendCommandArray(
+      dirs.map((d) => buildSlewCommand(d, startStop))
+    );
   }
 
   async updateMountSettings(mount: Mount) {
