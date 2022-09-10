@@ -90,9 +90,6 @@ Widget(width="full")
       :onChange="changeSlewingSpeed"
     )
 
-
-
-
 </template>
 
 <script setup lang="ts">
@@ -106,9 +103,9 @@ import {
   type ValidMountStatus,
   type MaxSlewSpeed,
 } from "../types";
-import { MountControl } from "../api/control";
+import { MountControl } from "../onstep/control";
 import { computed, ref, onBeforeUnmount } from "vue";
-import type { Search } from "../api/search";
+import type { Search } from "../onstep/search";
 
 const props = defineProps<{
   control: MountControl;

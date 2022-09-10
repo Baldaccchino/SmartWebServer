@@ -1,8 +1,8 @@
 import { Mutex } from "async-mutex";
 import { MountStatus } from "../types";
-import { API } from "./api";
-import { Command } from "./command";
-import { OnStepStatus } from "./onStepStatus";
+import { API } from "../api/api";
+import { Command, validateCommand } from "./command";
+import { MountFeatures, OnStepStatus } from "./onStepStatus";
 
 export class OnStep {
   public commandLogs: {
@@ -19,16 +19,28 @@ export class OnStep {
   constructor(private api: API, private onError: (error: string) => void) {
     api.onVersionAvailable((v) => this._status.setSwsVersion(v));
 
-    this._status = new OnStepStatus(this, (status) =>
-      this._onStatus?.(status)
-    ).startHeartbeat();
+    this._status = new OnStepStatus(this, (status) => this._onStatus?.(status));
 
     this.mutex = new Mutex();
+
+    this._status.startHeartbeat();
   }
 
   onStatusUpdate(fn: (status: MountStatus) => void) {
     this._onStatus = fn;
     return this;
+  }
+
+  mountSupports(feature: MountFeatures) {
+    return this._status.mountSupports(feature);
+  }
+
+  getValidStatus() {
+    const status = this._status.getValidStatus();
+    if (!status) {
+      throw new Error("Attempted to get status before it was available.");
+    }
+    return status;
   }
 
   disconnect() {
@@ -59,7 +71,7 @@ export class OnStep {
 
   /**
    * Send an object of commands. It returns an object with the same keys,
-   * but the values are the command responses
+   * but the values are the command responses: { [TFriendlyCommandName]: TResponse }
    */
   async sendCommands<
     TFriendlyCommandName extends string,
@@ -118,13 +130,13 @@ export class OnStep {
   }
 
   private validateCommand(cmd: string) {
-    if (cmd.startsWith(":") && cmd.endsWith("#")) {
-      return true;
+    const result = validateCommand(cmd);
+    if (result.valid) {
+      return;
     }
 
-    const err = `Command ${cmd} was not valid. It needs to begin with : and end with #`;
-    this.onError(err);
-    throw new Error(err);
+    this.onError(result.error);
+    throw new Error("Invalid command");
   }
 
   private apiRequest<TApiData>(ep: string, data: object): Promise<TApiData> {

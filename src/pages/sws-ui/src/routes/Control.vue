@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import { MountControl } from "../api/control";
+import { MountControl } from "../onstep/control";
 import { type ValidMountStatus } from "../types";
 import Tracking from "../widgets/Tracking.vue";
 import Parking from "../widgets/Parking.vue";

@@ -111,7 +111,7 @@ Columns
 
 <script setup lang="ts">
 import { computed, onMounted, ref, toRaw } from "vue";
-import { MountControl } from "../api/control";
+import { MountControl } from "../onstep/control";
 import ControlButton from "../components/ControlButton.vue";
 import type { ValidMountStatus } from "../types";
 import { formatDate } from "../utils/formatDate";

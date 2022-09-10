@@ -27,7 +27,7 @@ import { computed, ref } from "vue";
 import Widget from "../components/Widget.vue";
 import Toggle from "../components/Toggle.vue";
 import { type ValidMountStatus } from "../types";
-import { MountControl } from "../api/control";
+import { MountControl } from "../onstep/control";
 import ControlButton from "../components/ControlButton.vue";
 import Modal from "../components/Modal.vue";
 

@@ -25,7 +25,7 @@ export const parkCommand = ":hP#";
 export const unparkCommand = ":hR#";
 export const estopCommand = ":Q#";
 export const syncCommand = ":CS#";
-export const onstepFirmwareCommand = ":GVN#";
+export const onstepVersionCommand = ":GVN#";
 export const mountStatusCommand = ":GU#";
 export const raCurrentCommand = ":GR#";
 export const decCurrentCommand = ":GD#";
@@ -246,7 +246,7 @@ export function buildDateUpdateCommands(offset?: string) {
 }
 
 export const statusCommands = {
-  onstepFirmware: onstepFirmwareCommand,
+  onstepVersion: onstepVersionCommand,
   mountStatus: mountStatusCommand,
   raCurrent: raCurrentCommand,
   decCurrent: decCurrentCommand,

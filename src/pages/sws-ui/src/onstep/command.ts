@@ -1,3 +1,12 @@
+export function validateCommand(cmd: string) {
+  if (cmd.startsWith(":") && cmd.endsWith("#")) {
+    return { valid: true as const };
+  }
+
+  const error = `Command ${cmd} was not valid. It needs to begin with : and end with #`;
+  return { valid: false as const, error };
+}
+
 export class Command {
   private cmdKey;
   constructor(

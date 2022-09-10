@@ -38,7 +38,7 @@ Widget(width="half")
 import Widget from "../components/Widget.vue";
 import { StarIcon } from "@heroicons/vue/24/solid";
 import { type ValidMountStatus } from "../types";
-import { MountControl } from "../api/control";
+import { MountControl } from "../onstep/control";
 import ControlButton from "../components/ControlButton.vue";
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";

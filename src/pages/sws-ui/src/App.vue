@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, onBeforeUnmount, computed } from "vue";
+import { ref, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import { api } from "./api/api";
-import { OnStep } from "./api/onStep";
-import { MountControl } from "./api/control";
+import { OnStep } from "./onstep/onStep";
+import { MountControl } from "./onstep/control";
 import Navbar from "./components/Navbar.vue";
 import LoadingSpinner from "./components/LoadingSpinner.vue";
 import FullScreen from "./components/FullScreen.vue";

@@ -1,5 +1,3 @@
-import { OneZero } from "./responses";
-
 export type TrackingModes =
   | "sidereal" // Ts
   | "lunar" // Tl
@@ -14,6 +12,29 @@ export type RateComp =
   | "full_both";
 
 export type MountType = "unknown" | "gem" | "fork" | "fork_alt" | "alt_az";
+
+type DriverOutput = {
+  open: boolean;
+  short: boolean;
+};
+
+type ValidAxis = {
+  valid: true;
+  name: "ra" | "dec" | number;
+  commsFailure: boolean;
+  standStill: boolean;
+  outputA: DriverOutput;
+  outputB: DriverOutput;
+  almostOverTemp: boolean;
+  overTemp: boolean;
+  fault: boolean;
+};
+
+type InvalidAxis = {
+  valid: false;
+};
+
+export type Axis = ValidAxis | InvalidAxis;
 
 type BaseMount = {
   min_alt: string;
@@ -110,6 +131,7 @@ export type ValidMountStatus = {
   features: {
     buzzer: boolean;
   };
+  axes: Axis[];
 };
 
 export type MaxSlewSpeed = "vs" | "s" | "n" | "f" | "vf";

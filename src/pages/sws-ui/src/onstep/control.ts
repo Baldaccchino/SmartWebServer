@@ -1,4 +1,4 @@
-import { API } from "./api";
+import { API } from "../api/api";
 import { awaiter } from "../utils/awaiter";
 import {
   TrackingModes,
@@ -100,12 +100,12 @@ export class MountControl {
       long: buildLocationCommand(
         "long",
         location.long,
-        this.mountSupports("locationSeconds")
+        this.onStep.mountSupports("locationSeconds")
       ),
       lat: buildLocationCommand(
         "lat",
         location.lat,
-        this.mountSupports("locationSeconds")
+        this.onStep.mountSupports("locationSeconds")
       ),
     });
 
@@ -266,7 +266,7 @@ export class MountControl {
       buildGoToCommand(star)
     );
 
-    const moveResult = String(moveTelescopeCommand);
+    const moveResult = moveTelescopeCommand;
 
     if (moveResult !== "0") {
       const message =
@@ -321,7 +321,7 @@ export class MountControl {
   }
 
   async nextStarAlignment() {
-    const status = this.getValidStatus();
+    const status = this.onStep.getValidStatus();
     const currentStar = status.alignment.currentStar;
 
     await this.syncWith();
@@ -407,36 +407,5 @@ export class MountControl {
         params.onTimeout?.();
       },
     });
-  }
-
-  private getMountVersion() {
-    const status = this.getValidStatus();
-
-    const [__, major, minor, patch] = status.version.onstep
-      .match(/(\d+)\.(\d+)([a-z]+)/i)!
-      .map((i) => {
-        if (i.match(/^\d+$/)) {
-          return parseInt(i);
-        }
-        return i;
-      }) as [string, number, number, string];
-    return { major, minor, patch };
-  }
-
-  private mountSupports(feature: "locationSeconds") {
-    const { major } = this.getMountVersion();
-
-    switch (feature) {
-      case "locationSeconds":
-        return major > 3;
-    }
-  }
-
-  private getValidStatus() {
-    if (this.status?.type !== "valid") {
-      throw new Error("Attempted to get valid status.");
-    }
-
-    return this.status;
   }
 }
