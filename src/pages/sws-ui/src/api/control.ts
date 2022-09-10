@@ -62,6 +62,7 @@ export class MountControl {
     this.mutex = new Mutex();
     this.onStep = new OnStep(api, onError);
     this.onStepStatus = new OnStepStatus(this.onStep);
+    api.onVersionAvailable((v) => this.setSwsVersion(v));
   }
 
   setSwsVersion(v: string) {
