@@ -1,32 +1,7 @@
-import { OnStep } from "./onStep";
+import { ref } from "vue";
+import type { OnStep } from "./onStep";
 import type { Mount, MountStatus, RateComp } from "../types";
-import {
-  onstepFirmwareCommand,
-  mountStatusCommand,
-  raCurrentCommand,
-  decCurrentCommand,
-  raTargetCommand,
-  decTargetCommand,
-  trackingTypeCommand,
-  siteLongCommand,
-  siteLatCommand,
-  alignStarsCommand,
-  nominalRateCommand,
-  currentRateCommand,
-  utcDateCommand,
-  utcTimeCommand,
-  utcOffsetCommand,
-  siderealTimeCommand,
-  localTimeCommand,
-  slewRateCommand,
-  minAltCommand,
-  maxAltCommand,
-  backlashRaCommand,
-  backlashDecCommand,
-  degPastMeridianECommand,
-  degPastMeridianWCommand,
-  meridianStatusCommand,
-} from "../onstep/commands";
+import { statusCommands } from "../onstep/commands";
 import {
   charExists,
   getTrackSpeed,
@@ -40,35 +15,6 @@ import {
 } from "./statusUtils";
 import { times } from "../utils/compareObjects";
 import { Driver, Focuser, updateResources } from "./drivers";
-import { Mutex } from "async-mutex";
-
-const statusCommands = {
-  onstepFirmware: onstepFirmwareCommand,
-  mountStatus: mountStatusCommand,
-  raCurrent: raCurrentCommand,
-  decCurrent: decCurrentCommand,
-  raTarget: raTargetCommand,
-  decTarget: decTargetCommand,
-  trackingType: trackingTypeCommand,
-  siteLong: siteLongCommand,
-  siteLat: siteLatCommand,
-  alignStars: alignStarsCommand,
-  nominalRate: nominalRateCommand,
-  currentRate: currentRateCommand,
-  utcDate: utcDateCommand,
-  utcTime: utcTimeCommand,
-  utcOffset: utcOffsetCommand,
-  siderealTime: siderealTimeCommand,
-  localTime: localTimeCommand,
-  slewRate: slewRateCommand,
-  minAlt: minAltCommand,
-  maxAlt: maxAltCommand,
-  backlashRa: backlashRaCommand,
-  backlashDec: backlashDecCommand,
-  degPastMerE: degPastMeridianECommand,
-  degPastMerW: degPastMeridianWCommand,
-  meridianStatus: meridianStatusCommand,
-};
 
 async function fetchStatus(commander: OnStep) {
   const { isValid } = await commander.sendCommands(
@@ -94,13 +40,14 @@ async function fetchStatus(commander: OnStep) {
 
 type StatusFetchResponse = Awaited<ReturnType<typeof fetchStatus>>;
 
-export function getMount(response: StatusFetchResponse): Mount {
+function getMountStatus(response: StatusFetchResponse): Mount {
   if (response.type !== "valid") {
     throw new Error("Attempted to get mount on invalid.");
   }
 
   const { backlashRa, backlashDec, minAlt, maxAlt, degPastMerE, degPastMerW } =
     response.response;
+
   const { test } = response;
 
   const mountType = test("E")
@@ -178,14 +125,15 @@ export function getMount(response: StatusFetchResponse): Mount {
 }
 
 export class OnStepStatus {
+  #onStep;
+  private heartbeat?: number;
   private drivers?: Driver[];
   private focusers?: Focuser[];
   private swsVersion = "?";
-  private _status?: MountStatus;
-
-  private mutex;
-  constructor(private commander: OnStep) {
-    this.mutex = new Mutex();
+  private _status;
+  constructor(onStep: OnStep, private onStatus: (status: MountStatus) => void) {
+    this.#onStep = onStep;
+    this._status = ref<MountStatus | undefined>(undefined);
   }
 
   async getFocusersStatus() {
@@ -195,27 +143,52 @@ export class OnStepStatus {
 
     this.focusers = times(6).map((i) => new Focuser(i));
 
-    await updateResources(this.commander, this.focusers);
+    await updateResources(this.#onStep, this.focusers);
   }
 
   get status() {
-    return this._status;
+    return this._status.value;
   }
 
   setSwsVersion(v: string) {
     this.swsVersion = v;
     return this;
   }
+
   private async getDriverStatus() {
     if (!this.drivers) {
       this.drivers = times(9).map((i) => new Driver(i));
     }
 
-    await updateResources(this.commander, this.drivers);
+    await updateResources(this.#onStep, this.drivers);
   }
 
-  async getStatus(): Promise<MountStatus> {
-    const response = await fetchStatus(this.commander);
+  startHeartbeat() {
+    if (this.heartbeat) {
+      throw new Error("Heartbeat is already ticking.");
+    }
+
+    this.heartbeat = setInterval(
+      () => this.refreshStatus(),
+      4000
+    ) as any as number;
+    return this;
+  }
+
+  stopHeartbeat() {
+    if (this.heartbeat) {
+      clearInterval(this.heartbeat);
+      this.heartbeat = undefined;
+    }
+  }
+
+  async refreshStatus() {
+    this._status.value = await this.getStatus();
+    this.onStatus(this._status.value);
+  }
+
+  private async getStatus(): Promise<MountStatus> {
+    const response = await fetchStatus(this.#onStep);
 
     if (response.type === "invalid") {
       return response;
@@ -264,7 +237,7 @@ export class OnStepStatus {
         lat: getLocation(siteLat),
         long: getLocation(siteLong),
       },
-      mount: getMount(response),
+      mount: getMountStatus(response),
       position: {
         current: {
           ra: raCurrent,

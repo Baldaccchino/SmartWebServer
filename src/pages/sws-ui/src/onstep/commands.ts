@@ -244,3 +244,31 @@ export function buildDateUpdateCommands(offset?: string) {
     )}#`,
   };
 }
+
+export const statusCommands = {
+  onstepFirmware: onstepFirmwareCommand,
+  mountStatus: mountStatusCommand,
+  raCurrent: raCurrentCommand,
+  decCurrent: decCurrentCommand,
+  raTarget: raTargetCommand,
+  decTarget: decTargetCommand,
+  trackingType: trackingTypeCommand,
+  siteLong: siteLongCommand,
+  siteLat: siteLatCommand,
+  alignStars: alignStarsCommand,
+  nominalRate: nominalRateCommand,
+  currentRate: currentRateCommand,
+  utcDate: utcDateCommand,
+  utcTime: utcTimeCommand,
+  utcOffset: utcOffsetCommand,
+  siderealTime: siderealTimeCommand,
+  localTime: localTimeCommand,
+  slewRate: slewRateCommand,
+  minAlt: minAltCommand,
+  maxAlt: maxAltCommand,
+  backlashRa: backlashRaCommand,
+  backlashDec: backlashDecCommand,
+  degPastMerE: degPastMeridianECommand,
+  degPastMerW: degPastMeridianWCommand,
+  meridianStatus: meridianStatusCommand,
+};

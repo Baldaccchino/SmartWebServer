@@ -12,7 +12,7 @@ export class Command {
     return [this.cmdKey, this.command];
   }
 
-  getResponseEntries(response: Record<string, string>) {
+  getResponseEntriy(response: Record<string, string>) {
     return [this.returnKey, this.getResponseValue(response)];
   }
 
@@ -20,7 +20,7 @@ export class Command {
     return response[this.cmdKey] ?? "";
   }
 
-  getLogResponse(response: Record<string, string>) {
+  getCommandLogs(response: Record<string, string>) {
     return {
       command: this.command,
       response: response[this.cmdKey],

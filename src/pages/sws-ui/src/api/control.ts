@@ -41,33 +41,19 @@ import {
   TrackingRateAdjustment,
   unparkCommand,
 } from "../onstep/commands";
-
 import { Star } from "../database";
 import { objectsEqual } from "../utils/compareObjects";
-import { Mutex } from "async-mutex";
-import { OnStep } from "./onStep";
-import { OnStepStatus } from "./onStepStatus";
+import type { OnStep } from "./onStep";
 import { Search } from "./search";
 
 export class MountControl {
-  private heartbeat?: number;
-  private onStatus?: (status: MountStatus) => void;
-  private status?: MountStatus;
-  private mutex;
-  private onStep;
-  private onStepStatus;
   private _onAfterGoto?: () => void;
 
-  constructor(api: API, private onError: (error: string) => void) {
-    this.mutex = new Mutex();
-    this.onStep = new OnStep(api, onError);
-    this.onStepStatus = new OnStepStatus(this.onStep);
-    api.onVersionAvailable((v) => this.setSwsVersion(v));
-  }
-
-  setSwsVersion(v: string) {
-    this.onStepStatus.setSwsVersion(v);
-  }
+  constructor(
+    api: API,
+    private onStep: OnStep,
+    private onError: (error: string) => void
+  ) {}
 
   public get commandLogs() {
     return this.onStep.commandLogs;
@@ -86,43 +72,12 @@ export class MountControl {
     return this;
   }
 
-  startHeartbeat(
-    onStatus: (status: MountStatus) => void,
-    onLoading?: (loading: boolean) => void
-  ) {
-    if (this.heartbeat) {
-      throw new Error("Heartbeat is already ticking.");
-    }
-
-    this.onStatus = onStatus;
-
-    this.heartbeat = setInterval(
-      () => this.getStatus(onLoading),
-      4000
-    ) as any as number;
-    return this;
+  private refreshStatus() {
+    return this.onStep.refreshStatus();
   }
 
-  stopHeartbeat() {
-    if (this.heartbeat) {
-      clearInterval(this.heartbeat);
-      this.heartbeat = undefined;
-    }
-  }
-
-  private async getStatus(onLoading?: (loading: boolean) => void) {
-    onLoading?.(true);
-
-    await this.mutex.runExclusive(async () => {
-      this.status = await this.onStepStatus.getStatus();
-
-      if (this.status.lastError) {
-        this.onError(`A background error occured! ${this.status.lastError}`);
-      }
-
-      this.onStatus?.(this.status);
-      onLoading?.(false);
-    });
+  private get status() {
+    return this.onStep.status;
   }
 
   slew(dir: Direction, startStop: boolean) {
@@ -173,7 +128,7 @@ export class MountControl {
 
   async setNewHome() {
     await this.sendCommand(setNewHomeCommand);
-    await this.getStatus();
+    await this.refreshStatus();
   }
 
   async goHome() {
@@ -198,7 +153,7 @@ export class MountControl {
 
   async doMeridianFlip() {
     await this.sendCommand(doMeridianFlipCommand);
-    await this.getStatus();
+    await this.refreshStatus();
   }
 
   async setMeridianAutoFlipNow() {
@@ -237,7 +192,7 @@ export class MountControl {
 
   async changeSpeed(speed: number) {
     await this.sendCommand(buildSpeedCommand(speed));
-    await this.getStatus();
+    await this.refreshStatus();
   }
 
   async changeMaxSlewSpeed(speed: MaxSlewSpeed) {
@@ -387,7 +342,7 @@ export class MountControl {
 
   async setParkingLocation() {
     await this.sendCommand(setParkingLocationCommand);
-    await this.getStatus();
+    await this.refreshStatus();
   }
 
   async park() {
@@ -420,7 +375,7 @@ export class MountControl {
 
   async changeTrackingType(mode: TrackingModes) {
     await this.sendCommand(buildTrackingTypeCommand(mode));
-    await this.getStatus();
+    await this.refreshStatus();
   }
 
   async estop() {

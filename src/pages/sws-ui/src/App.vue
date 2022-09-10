@@ -1,36 +1,40 @@
 <script setup lang="ts">
-import { ref, onBeforeUnmount } from "vue";
+import { ref, onBeforeUnmount, computed } from "vue";
 import { useRouter } from "vue-router";
 import { api } from "./api/api";
+import { OnStep } from "./api/onStep";
 import { MountControl } from "./api/control";
-import { type MountStatus } from "./types";
 import Navbar from "./components/Navbar.vue";
 import LoadingSpinner from "./components/LoadingSpinner.vue";
 import FullScreen from "./components/FullScreen.vue";
 import SerialDown from "./components/SerialDown.vue";
 import { toast } from "./utils/toast";
 import NetworkDown from "./components/NetworkDown.vue";
+import { MountStatus } from "./types";
 
 const router = useRouter();
-const status = ref<null | MountStatus>(null);
 const networkError = ref(false);
+const status = ref<MountStatus | null>(null);
 
-const control = new MountControl(
-  api
-    .onNetworkDown(() => {
-      networkError.value = true;
-    })
-    .onNetworkUp(() => {
-      networkError.value = false;
-    }),
-  (error) => toast(error, "error")
-)
-  .startHeartbeat((s) => (status.value = s))
+function onError(e: string) {
+  toast(e, "error");
+}
+
+api
+  .onNetworkDown(() => {
+    networkError.value = true;
+  })
+  .onNetworkUp(() => {
+    networkError.value = false;
+  });
+
+const onStep = new OnStep(api, onError, (s) => (status.value = s));
+onBeforeUnmount(() => onStep.disconnect());
+
+const control = new MountControl(api, onStep, onError)
   // after a goto, the user probably wants to be back on the control page.
   // we'll push them to the control page after a goto completion.
   .onAfterGoto(() => router.push({ name: "control" }));
-
-onBeforeUnmount(() => control.stopHeartbeat());
 </script>
 
 <template lang="pug">
