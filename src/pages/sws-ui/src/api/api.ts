@@ -55,14 +55,6 @@ export class API {
     return this.parseResponse<T>(await this.getWithoutParse(url, params));
   }
 
-  async post<T>(url: string, params?: object) {
-    return this.parseResponse<T>(
-      await this.axios.post(url, {
-        ...(params ?? {}),
-      })
-    );
-  }
-
   private parseResponse<T>(response: AxiosResponse) {
     const data = response.data;
 
