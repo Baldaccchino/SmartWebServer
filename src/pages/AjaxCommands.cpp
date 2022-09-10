@@ -1,6 +1,11 @@
 #include "./Pages.common.h"
 #include "../lib/tasks/OnTask.h"
 
+void sendVersionHeader()
+{
+    www.sendHeader("x-sws-version", firmwareVersion.str);
+}
+
 /**
  * Batch up to 100 commands in one HTTP request
  * Each command should be cmd_${number}.
@@ -26,11 +31,8 @@ void ajaxRunCommands()
         data += cmdBuffer;
         Y;
     }
-
-    data += "sws_version|";
-    data += firmwareVersion.str;
-    data += "\n";
-
+    
+    sendVersionHeader();
     www.send(200, "text/plain", data);
 }
 
@@ -43,8 +45,10 @@ void ajaxRunCommand()
     if (cmd != "") {
         cmd.toCharArray(cmdBuffer, 40);
         onStep.command(cmdBuffer, result);
-        www.send(200, "text/plain", result);
     }
+
+    sendVersionHeader();
+    www.send(200, "text/plain", result);
 }
 
 void ajaxLibrary() {
@@ -65,5 +69,6 @@ void ajaxLibrary() {
         }
     }
 
+    sendVersionHeader();
     www.send(200, "text/plain", data);
 }
