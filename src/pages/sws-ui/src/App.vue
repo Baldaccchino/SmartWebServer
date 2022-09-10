@@ -26,7 +26,10 @@ const control = new MountControl(
   (error) => toast(error, "error")
 )
   .startHeartbeat((s) => (status.value = s))
+  // after a goto, the user probably wants to be back on the control page.
+  // we'll push them to the control page after a goto completion.
   .onAfterGoto(() => router.push({ name: "control" }));
+
 onBeforeUnmount(() => control.stopHeartbeat());
 </script>
 
