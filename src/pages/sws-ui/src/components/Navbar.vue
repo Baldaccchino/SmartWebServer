@@ -119,7 +119,7 @@ import { ExclamationCircleIcon } from "@heroicons/vue/24/solid";
 import { RouterLink } from "vue-router";
 import type { ValidMountStatus } from "../types";
 import logo from "../assets/onstep.png";
-import { MountControl } from "../onstep/control";
+import { MountControl } from "../onstep/mountControl";
 import Menu from "./Menu.vue";
 
 const props = defineProps<{

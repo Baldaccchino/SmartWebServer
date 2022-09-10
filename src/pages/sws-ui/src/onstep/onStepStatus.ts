@@ -1,4 +1,3 @@
-import { ref } from "vue";
 import type { OnStep } from "./onStep";
 import type { Axis, MountStatus } from "../types";
 import {
@@ -10,12 +9,14 @@ import {
   getLastError,
   getLocation,
   getAlignment,
-} from "./statusUtils";
+} from "./status/statusUtils";
 import { times } from "../utils/compareObjects";
-import { AxisDriver } from "./drivers";
-import { updateResources } from "./queryable";
-import { Focuser } from "./focuser";
-import { fetchStatus, getMountStatus } from "./fetchStatus";
+import { AxisDriver } from "./features/axisDriver";
+import { updateResources } from "./features/queryable";
+import { Focuser } from "./features/focuser";
+import { fetchStatus, getMountStatus } from "./status/fetchStatus";
+import { Rotator } from "./features/rotator";
+import { AuxiliaryFeature, getAuxFeatures } from "./features/auxiliaryFeatures";
 
 export type MountFeatures = "locationSeconds" | "sixFocusers" | "nineAxes";
 
@@ -23,12 +24,15 @@ export class OnStepStatus {
   #onStep;
   private heartbeat?: number;
   private axes?: AxisDriver[];
+  private auxFeatures?: AuxiliaryFeature[];
   private focusers?: Focuser[];
+  private rotator;
   private swsVersion = "?";
   private onstepVersion = "?";
   private _status?: MountStatus;
   constructor(onStep: OnStep, private onStatus: (status: MountStatus) => void) {
     this.#onStep = onStep;
+    this.rotator = new Rotator();
   }
 
   getValidStatus() {
@@ -73,18 +77,15 @@ export class OnStepStatus {
     }
   }
 
-  async getFocusersStatus() {
-    // we only need to scan the focusers the first time around.
-    if (this.focusers) {
-      return;
-    }
-
+  async updateFocuserStatus() {
     const supportsSixFocusers = this.mountSupports("sixFocusers");
     const numFocusers = supportsSixFocusers ? 6 : 2;
 
-    this.focusers = times(numFocusers).map(
-      (i) => new Focuser(i, supportsSixFocusers)
-    );
+    if (!this.focusers) {
+      this.focusers = times(numFocusers).map(
+        (i) => new Focuser(supportsSixFocusers)
+      );
+    }
 
     await updateResources(this.#onStep, this.focusers);
   }
@@ -98,14 +99,24 @@ export class OnStepStatus {
     return this;
   }
 
+  private async updateAuxFeatures() {
+    if (!this.auxFeatures) {
+      this.auxFeatures = await getAuxFeatures(this.#onStep);
+    }
+
+    await updateResources(this.#onStep, this.auxFeatures);
+  }
   private async updateAxesStatus() {
     if (!this.axes) {
-      const supportsNineAxes = this.mountSupports("nineAxes");
-
-      this.axes = times(supportsNineAxes ? 9 : 2).map((i) => new AxisDriver(i));
+      this.axes = times(this.mountSupports("nineAxes") ? 9 : 2).map(
+        (i) => new AxisDriver(i)
+      );
     }
 
     await updateResources(this.#onStep, this.axes);
+  }
+  private async updateRotatorStatus() {
+    await updateResources(this.#onStep, [this.rotator]);
   }
 
   startHeartbeat() {
@@ -175,7 +186,9 @@ export class OnStepStatus {
       alignStars[1] !== "0";
 
     await this.updateAxesStatus();
-    await this.getFocusersStatus();
+    await this.updateFocuserStatus();
+    await this.updateRotatorStatus();
+    await this.updateAuxFeatures();
 
     return {
       type: "valid",
@@ -225,6 +238,7 @@ export class OnStepStatus {
         .filter((d) => !d.disabled)
         // casted to axis since typescript doesn't pick up on the filter above.
         .map((d) => d.status as Axis),
+      rotator: this.rotator.status,
     };
   }
 }

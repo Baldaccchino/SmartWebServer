@@ -22,7 +22,7 @@ import Widget from "../components/Widget.vue";
 import Toggle from "../components/Toggle.vue";
 import { StarIcon, MoonIcon, SunIcon } from "@heroicons/vue/24/outline";
 import { type ValidMountStatus, type TrackingModes } from "../types";
-import { MountControl } from "../onstep/control";
+import { MountControl } from "../onstep/mountControl";
 import Toggles from "../components/Toggles.vue";
 
 const props = defineProps<{

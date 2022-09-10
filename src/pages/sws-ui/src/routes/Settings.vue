@@ -138,7 +138,7 @@ Columns
 
 <script setup lang="ts">
 import { ref, computed, onMounted, toRaw } from "vue";
-import { MountControl } from "../onstep/control";
+import { MountControl } from "../onstep/mountControl";
 import { type ValidMountStatus, mountHasCompensation } from "../types";
 import Widget from "../components/Widget.vue";
 import Toggles from "../components/Toggles.vue";

@@ -1,4 +1,4 @@
-import { signed, num } from "../utils/num";
+import { signed, num } from "../../utils/num";
 import type {
   Coordinate,
   Direction,
@@ -6,13 +6,19 @@ import type {
   Mount,
   MountWithCompensation,
   TrackingModes,
-} from "../types";
-import { Star } from "../database";
-import { objectsEqual } from "../utils/compareObjects";
+} from "../../types";
+import { Star } from "../../database";
+import { objectsEqual } from "../../utils/compareObjects";
 
 export type TrackingRateAdjustment = "faster" | "slower" | "reset";
+
+export const checkAuxFeatureNumbersCommand = ":GXY0#";
+export const rotatorStatusCommand = ":GX98#";
+export const mountIsValidCommand = ":GVP#";
 export const setNewHomeCommand = ":hF#";
 export const goHomeCommand = ":hC#";
+export const firstFocuserActive = ":FA#";
+export const secondFocuserActive = ":fA#";
 export const doMeridianFlipCommand = ":SX99,1#";
 export const setMeridianAutoFlipNowCommand = ":MA#";
 export const startTrackingCommand = ":Te#";
@@ -51,9 +57,26 @@ export const degPastMeridianECommand = ":GXE9#";
 export const degPastMeridianWCommand = ":GXEA#";
 export const meridianStatusCommand = ":GX94#";
 
+export function buildAuxFeatureQueryCommand(index: number) {
+  return `:GXY${index}#`;
+}
+
+export function buildAuxFeatureUpdateCommand(index: number) {
+  return `:GXX${index}#`;
+}
+
+export function buildAxisDriverStatusCommand(axis: number) {
+  return `:GXU${axis}#`;
+}
+
+export function buildFocuserActiveCommand(focuser: number) {
+  return `:F${focuser}a#`;
+}
+
 export function buildSlewCommand(dir: Direction, startStop: boolean) {
   return `:${startStop ? "M" : "Q"}${dir}#`;
 }
+
 export function buildMountUpdateCommand(mount: Mount) {
   const commands: string[] = [];
 

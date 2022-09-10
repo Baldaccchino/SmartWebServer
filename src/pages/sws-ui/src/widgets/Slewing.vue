@@ -103,9 +103,9 @@ import {
   type ValidMountStatus,
   type MaxSlewSpeed,
 } from "../types";
-import { MountControl } from "../onstep/control";
+import { MountControl } from "../onstep/mountControl";
 import { computed, ref, onBeforeUnmount } from "vue";
-import type { Search } from "../onstep/search";
+import type { Search } from "../onstep/actions/search";
 
 const props = defineProps<{
   control: MountControl;

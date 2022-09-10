@@ -1,21 +1,28 @@
-import { Axis } from "../types";
+import { Axis } from "../../types";
+import { buildAxisDriverStatusCommand } from "../commands/onstepCommands";
 import { Queryable } from "./queryable";
 
 export class AxisDriver implements Queryable {
   private failedQueries = 0;
   private _status?: Axis;
+  private fetchCounter = 0;
   constructor(private index: number) {}
 
   get status() {
     return this._status;
   }
 
-  get queryCommand() {
+  getQueryCommand(index: number) {
     if (this.disabled) {
       return null;
     }
 
-    return `:GXU${this.index + 1}#`;
+    // no real reason to fetch this constantly
+    if (this.fetchCounter++ % 3 !== 0) {
+      return null;
+    }
+
+    return buildAxisDriverStatusCommand(index + 1);
   }
 
   private get axisName() {
@@ -32,8 +39,7 @@ export class AxisDriver implements Queryable {
     return this.failedQueries > 3;
   }
 
-  handleResponse(responses: string[]) {
-    const response = responses[this.index];
+  handleResponse(response: string) {
     if (typeof response === "undefined") {
       return;
     }

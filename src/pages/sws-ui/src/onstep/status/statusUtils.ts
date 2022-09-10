@@ -4,7 +4,7 @@ import {
   MountType,
   RateComp,
   TrackingModes,
-} from "../types";
+} from "../../types";
 
 function clamp(n: number, min = 0, max: number) {
   return Math.max(Math.min(n, max), min);
@@ -29,19 +29,16 @@ export function getTrackSpeed(currentRate: string, nominalRate: string) {
 }
 export function getBasicStatus(test: (char: string) => boolean) {
   const status = {
+    parking: test("I"),
+    parkFail: test("F"),
+    homing: test("h"),
+    guiding: test("g"),
+    waitingAtHome: test("w"),
+    buzzerEnabled: test("z"),
     parked: false,
-    parking: false,
-    parkFail: false,
     tracking: false,
     slewing: false,
     home: false,
-    homing: false,
-    guiding: false,
-    waitingAtHome: false,
-    buzzerEnabled: false,
-    mountType: "unknown" as MountType,
-    autoMeridianFlips: false,
-    rateComp: "none" as RateComp,
   };
 
   if (!test("N")) status.slewing = true;
@@ -50,14 +47,7 @@ export function getBasicStatus(test: (char: string) => boolean) {
   status.parked = test("P");
   if (test("p")) status.parked = false;
 
-  status.parking = test("I");
-  status.parkFail = test("F");
-
   status.home = test("H") && !status.parked;
-  status.homing = test("h");
-  status.guiding = test("g");
-  status.waitingAtHome = test("w");
-  status.buzzerEnabled = test("z");
 
   return status;
 }
@@ -98,6 +88,7 @@ export function getLastError(mountStatus: string) {
     ][parseInt(mountStatus.slice(-1))] ?? false
   );
 }
+
 export function getGuideRate(mountStatus: string) {
   return clamp(
     parseInt(

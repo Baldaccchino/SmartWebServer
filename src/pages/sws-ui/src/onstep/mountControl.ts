@@ -40,11 +40,11 @@ import {
   syncCommand,
   TrackingRateAdjustment,
   unparkCommand,
-} from "../onstep/commands";
+} from "./commands/onstepCommands";
 import { Star } from "../database";
 import { objectsEqual } from "../utils/compareObjects";
 import type { OnStep } from "./onStep";
-import { Search } from "./search";
+import { Search } from "./actions/search";
 
 export class MountControl {
   private _onAfterGoto?: () => void;

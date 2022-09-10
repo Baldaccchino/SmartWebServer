@@ -1,7 +1,7 @@
 import { Mutex } from "async-mutex";
 import { MountStatus } from "../types";
 import { API } from "../api/api";
-import { Command, validateCommand } from "./command";
+import { Command, validateCommand } from "./commands/command";
 import { MountFeatures, OnStepStatus } from "./onStepStatus";
 
 export class OnStep {

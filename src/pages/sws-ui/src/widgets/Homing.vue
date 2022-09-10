@@ -35,7 +35,7 @@ Widget(width="half")
 <script setup lang="ts">
 import Widget from "../components/Widget.vue";
 import { type ValidMountStatus, mountHasCompensation } from "../types";
-import { MountControl } from "../onstep/control";
+import { MountControl } from "../onstep/mountControl";
 import { computed, ref } from "vue";
 import ControlButton from "../components/ControlButton.vue";
 import Modal from "../components/Modal.vue";

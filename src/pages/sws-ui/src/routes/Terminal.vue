@@ -33,7 +33,7 @@ Columns
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import InputField from "../components/InputField.vue";
-import { MountControl } from "../onstep/control";
+import { MountControl } from "../onstep/mountControl";
 import ControlButton from "../components/ControlButton.vue";
 import Widget from "../components/Widget.vue";
 import Columns from "../components/Columns.vue";

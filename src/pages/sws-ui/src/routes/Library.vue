@@ -101,7 +101,7 @@ Columns
 import { computed, ref, onMounted, reactive, watch } from "vue";
 import Fuse from "fuse.js";
 import { api } from "../api/api";
-import { MountControl } from "../onstep/control";
+import { MountControl } from "../onstep/mountControl";
 import { RecentStars } from "../utils/recentStars";
 import { catalog, type Star, starTypes, type StarType } from "../database";
 

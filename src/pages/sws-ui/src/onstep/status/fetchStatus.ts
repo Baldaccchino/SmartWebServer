@@ -1,16 +1,18 @@
-import { OnStep } from "./onStep";
-import { Mount, RateComp } from "../types";
-import { statusCommands } from "../onstep/commands";
+import { OnStep } from "../onStep";
+import { Mount, RateComp } from "../../types";
+import {
+  mountIsValidCommand,
+  statusCommands,
+} from "../commands/onstepCommands";
 import { charExists } from "./statusUtils";
 
 type StatusFetchResponse = Awaited<ReturnType<typeof fetchStatus>>;
 export async function fetchStatus(commander: OnStep) {
-  const { isValid } = await commander.sendCommands(
-    { isValid: ":GVP#" },
-    "nolog"
-  );
+  // preflight request to make sure onstep is alive
+  const isValid = await commander.sendCommand(mountIsValidCommand, false);
 
   if (isValid !== "On-Step") {
+    console.error("On-Step was not recieved from the mount.", isValid);
     return {
       type: "invalid" as const,
       lastError: false as const,

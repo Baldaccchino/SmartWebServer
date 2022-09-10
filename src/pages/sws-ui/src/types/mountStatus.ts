@@ -13,6 +13,10 @@ export type RateComp =
 
 export type MountType = "unknown" | "gem" | "fork" | "fork_alt" | "alt_az";
 
+export type RotatorStatus = {
+  rotatorFound: boolean;
+  derotatorFound: boolean;
+};
 type DriverOutput = {
   open: boolean;
   short: boolean;
@@ -132,6 +136,7 @@ export type ValidMountStatus = {
     buzzer: boolean;
   };
   axes: Axis[];
+  rotator: RotatorStatus;
 };
 
 export type MaxSlewSpeed = "vs" | "s" | "n" | "f" | "vf";
