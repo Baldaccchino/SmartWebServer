@@ -9,6 +9,7 @@ import {
   getLastError,
   getLocation,
   getAlignment,
+  parseVersion,
 } from "./status/statusUtils";
 import { times } from "../utils/compareObjects";
 import { AxisDriver } from "./features/axisDriver";
@@ -44,25 +45,7 @@ export class OnStepStatus {
   }
 
   getMountVersion() {
-    const version = this.onstepVersion;
-
-    if (version === "?") {
-      return {
-        major: -1,
-        minor: -1,
-        patch: -1,
-      };
-    }
-
-    const [__, major, minor, patch] = version
-      .match(/(\d+)\.(\d+)([a-z]+)/i)!
-      .map((i) => {
-        if (i.match(/^\d+$/)) {
-          return parseInt(i);
-        }
-        return i;
-      }) as [string, number, number, string];
-    return { major, minor, patch };
+    return parseVersion(this.onstepVersion);
   }
 
   mountSupports(feature: MountFeatures): boolean {
@@ -115,6 +98,7 @@ export class OnStepStatus {
 
     await updateResources(this.#onStep, this.axes);
   }
+
   private async updateRotatorStatus() {
     await updateResources(this.#onStep, [this.rotator]);
   }

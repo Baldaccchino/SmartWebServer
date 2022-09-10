@@ -21,6 +21,27 @@ export function getTrackSpeed(currentRate: string, nominalRate: string) {
   }
   return trackSpeed;
 }
+
+export function parseVersion(version: string) {
+  if (version === "?") {
+    return {
+      major: -1,
+      minor: -1,
+      patch: -1,
+    };
+  }
+
+  const [__, major, minor, patch] = version
+    .match(/(\d+)\.(\d+)([a-z]+)/i)!
+    .map((i) => {
+      if (i.match(/^\d+$/)) {
+        return parseInt(i);
+      }
+      return i;
+    }) as [string, number, number, string];
+  return { major, minor, patch };
+}
+
 export function getBasicStatus(test: (char: string) => boolean) {
   const status = {
     parking: test("I"),
