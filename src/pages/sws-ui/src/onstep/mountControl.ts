@@ -342,7 +342,7 @@ export class MountControl {
 
     await this.waitForStatus({
       test: ({ status }) => {
-        return status.slewing;
+        return status.slewing || status.parked;
       },
       maxSeconds: 5,
       error: `Failed to start parking`,
