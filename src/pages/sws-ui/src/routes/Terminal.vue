@@ -54,7 +54,7 @@ async function send() {
 
   try {
     loading.value = true;
-    await props.control.sendCommand(cmd.value.trim(), false);
+    await props.control.sendCommand(cmd.value.trim());
     cmd.value = "";
   } finally {
     loading.value = false;

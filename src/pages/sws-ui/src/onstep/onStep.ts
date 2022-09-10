@@ -110,7 +110,7 @@ export class OnStep {
   /**
    * Send a singular command to the mount. It returns the command response.
    */
-  async sendCommand(cmd: string, shouldLogCommand = true) {
+  async sendCommand(cmd: string, shouldLogCommand: "log" | "nolog" = "nolog") {
     this.validateCommand(cmd);
 
     const response = (
@@ -119,12 +119,14 @@ export class OnStep {
       })
     ).data;
 
-    this.commandLogs.unshift({
-      command: cmd,
-      system: shouldLogCommand,
-      response,
-      date: new Date(),
-    });
+    if (shouldLogCommand === "log") {
+      this.commandLogs.unshift({
+        command: cmd,
+        system: false,
+        response,
+        date: new Date(),
+      });
+    }
 
     return response;
   }

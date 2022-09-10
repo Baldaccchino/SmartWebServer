@@ -7,9 +7,9 @@ import {
 import { charExists } from "./statusUtils";
 
 type StatusFetchResponse = Awaited<ReturnType<typeof fetchStatus>>;
-export async function fetchStatus(commander: OnStep) {
+export async function fetchStatus(onStep: OnStep) {
   // preflight request to make sure onstep is alive
-  const isValid = await commander.sendCommand(mountIsValidCommand, false);
+  const isValid = await onStep.sendCommand(mountIsValidCommand);
 
   if (isValid !== "On-Step") {
     console.error("On-Step was not recieved from the mount.", isValid);
@@ -19,7 +19,7 @@ export async function fetchStatus(commander: OnStep) {
     };
   }
 
-  const response = await commander.sendCommands(statusCommands, "nolog");
+  const response = await onStep.sendCommands(statusCommands, "nolog");
 
   return {
     type: "valid" as const,

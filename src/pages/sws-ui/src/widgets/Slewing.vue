@@ -7,16 +7,18 @@ Widget(width="full")
 
   .flex.justify-center
     .w-full.flex.justify-center(class="md_w-1/2 xl_w-1/3")
-      ControlButton(
-        @click="doSearch"
-        :disabled="!canSlew"
-        v-if="!search"
-      ) Search
+      //- 
+        todo: this feature is kinda weird.
+        ControlButton(
+          @click="doSearch"
+          :disabled="!canSlew"
+          v-if="!search"
+        ) Search
 
-      ControlButton(
-        @click="stopSearch"
-        v-else
-      ) Stop search
+        ControlButton(
+          @click="stopSearch"
+          v-else
+        ) Stop search
 
   .flex.justify-center
     .grid.grid-cols-3.gap-4.select-none.mb-8.w-full(class="md_w-1/2 xl_w-1/3")

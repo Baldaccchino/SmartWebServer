@@ -5,7 +5,7 @@ import { OnStep } from "../onStep";
 export class Search {
   private stopped = false;
   private timeout?: number;
-  constructor(private commander: OnStep) {}
+  constructor(private onStep: OnStep) {}
 
   async search() {
     // execute a series of search patterns roughly approximating a box.
@@ -31,7 +31,7 @@ export class Search {
     clearTimeout(this.timeout);
     this.stopped = true;
     for (const d of ["n", "e", "w", "s"] as Direction[]) {
-      await this.commander.sendCommand(buildSlewCommand(d, false));
+      await this.onStep.sendCommand(buildSlewCommand(d, false));
     }
   }
 
@@ -54,7 +54,7 @@ export class Search {
 
   private async move(dirs: Direction[], start: "start" | "stop" = "start") {
     for (const d of dirs) {
-      await this.commander.sendCommand(buildSlewCommand(d, start === "start"));
+      await this.onStep.sendCommand(buildSlewCommand(d, start === "start"));
     }
   }
 }

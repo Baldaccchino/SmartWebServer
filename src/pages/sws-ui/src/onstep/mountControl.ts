@@ -1,8 +1,6 @@
-import { API } from "../api/api";
 import { awaiter } from "../utils/awaiter";
 import {
   TrackingModes,
-  MountStatus,
   MaxSlewSpeed,
   Direction,
   ValidMountStatus,
@@ -50,7 +48,6 @@ export class MountControl {
   private _onAfterGoto?: () => void;
 
   constructor(
-    api: API,
     private onStep: OnStep,
     private onError: (error: string) => void
   ) {}
@@ -81,13 +78,13 @@ export class MountControl {
   }
 
   slew(dir: Direction, startStop: boolean) {
-    return this.sendCommand(buildSlewCommand(dir, startStop));
+    return this.onStep.sendCommand(buildSlewCommand(dir, startStop));
   }
 
   async updateMountSettings(mount: Mount) {
     const { compareStatus, commands } = buildMountUpdateCommand(mount);
 
-    await this.sendCommands(commands);
+    await this.onStep.sendCommands(commands);
 
     await this.waitForStatus({
       test: (status) => compareStatus(status.mount),
@@ -96,7 +93,7 @@ export class MountControl {
   }
 
   async setLocation(location: ValidMountStatus["location"]) {
-    await this.sendCommands({
+    await this.onStep.sendCommands({
       long: buildLocationCommand(
         "long",
         location.long,
@@ -117,7 +114,7 @@ export class MountControl {
   }
 
   async setDateTime(offset?: string) {
-    await this.sendCommands(buildDateUpdateCommands(offset));
+    await this.onStep.sendCommands(buildDateUpdateCommands(offset));
 
     await this.waitForStatus({
       test: (status) => !status.dateTime.datesAreOutOfSync,
@@ -127,12 +124,12 @@ export class MountControl {
   }
 
   async setNewHome() {
-    await this.sendCommand(setNewHomeCommand);
+    await this.onStep.sendCommand(setNewHomeCommand);
     await this.refreshStatus();
   }
 
   async goHome() {
-    await this.sendCommand(goHomeCommand);
+    await this.onStep.sendCommand(goHomeCommand);
 
     await this.waitForStatus({
       test: (status) => {
@@ -152,16 +149,16 @@ export class MountControl {
   }
 
   async doMeridianFlip() {
-    await this.sendCommand(doMeridianFlipCommand);
+    await this.onStep.sendCommand(doMeridianFlipCommand);
     await this.refreshStatus();
   }
 
   async setMeridianAutoFlipNow() {
-    await this.sendCommand(setMeridianAutoFlipNowCommand);
+    await this.onStep.sendCommand(setMeridianAutoFlipNowCommand);
   }
 
   async setMeridianAutoFlip(enable: boolean) {
-    await this.sendCommand(buildMerdianAutoFlipCommand(enable));
+    await this.onStep.sendCommand(buildMerdianAutoFlipCommand(enable));
     await this.waitForStatus({
       test: (status) =>
         status.mount.type === "gem" && status.mount.auto_meridian === enable,
@@ -171,7 +168,7 @@ export class MountControl {
   }
 
   async setMeridianPauseAtHome(enable: boolean) {
-    await this.sendCommand(buildMeridianPauseAtHomeCommand(enable));
+    await this.onStep.sendCommand(buildMeridianPauseAtHomeCommand(enable));
 
     await this.waitForStatus({
       test: (status) =>
@@ -182,7 +179,7 @@ export class MountControl {
   }
 
   async setBuzzer(enable: boolean) {
-    await this.sendCommand(buildBuzzerCommand(enable));
+    await this.onStep.sendCommand(buildBuzzerCommand(enable));
     await this.waitForStatus({
       test: (status) => status.features.buzzer === enable,
       maxSeconds: 5,
@@ -191,12 +188,12 @@ export class MountControl {
   }
 
   async changeSpeed(speed: number) {
-    await this.sendCommand(buildSpeedCommand(speed));
+    await this.onStep.sendCommand(buildSpeedCommand(speed));
     await this.refreshStatus();
   }
 
   async changeMaxSlewSpeed(speed: MaxSlewSpeed) {
-    await this.sendCommand(buildMaxSlewSpeedCommand(speed));
+    await this.onStep.sendCommand(buildMaxSlewSpeedCommand(speed));
 
     await this.waitForStatus({
       test: (status) => status.slewing.maxSpeed === speed,
@@ -213,7 +210,7 @@ export class MountControl {
       rate,
       axes
     );
-    await this.sendCommands(commands);
+    await this.onStep.sendCommands(commands);
 
     await this.waitForStatus({
       test: (status) => {
@@ -230,13 +227,13 @@ export class MountControl {
   }
 
   async syncWith() {
-    await this.sendCommand(syncCommand);
+    await this.onStep.sendCommand(syncCommand);
   }
 
   async startTracking() {
     await this.unPark();
 
-    await this.sendCommand(startTrackingCommand);
+    await this.onStep.sendCommand(startTrackingCommand);
 
     await this.waitForStatus({
       test: ({ status }) => status.tracking,
@@ -245,11 +242,11 @@ export class MountControl {
   }
 
   async adjustTrackingRate(type: TrackingRateAdjustment) {
-    await this.sendCommand(buildTrackingRateCommand(type));
+    await this.onStep.sendCommand(buildTrackingRateCommand(type));
   }
 
   async continueGoTo() {
-    await this.sendCommand(continueGoToCommand);
+    await this.onStep.sendCommand(continueGoToCommand);
 
     await this.waitForStatus({
       test: (status) => !status.status.waitingAtHome,
@@ -262,7 +259,7 @@ export class MountControl {
    * somewhere so that we could show the user "going to star xyz"
    */
   async goToStar(star: Star) {
-    const { moveTelescopeCommand } = await this.sendCommands(
+    const { moveTelescopeCommand } = await this.onStep.sendCommands(
       buildGoToCommand(star)
     );
 
@@ -296,16 +293,12 @@ export class MountControl {
     this._onAfterGoto = undefined;
   }
 
-  async sendCommands<T extends string>(cmds: Record<T, string>) {
-    return this.onStep.sendCommands(cmds);
-  }
-
-  async sendCommand(cmd: string, system = true) {
-    return this.onStep.sendCommand(cmd, system);
+  async sendCommand(cmd: string) {
+    return this.onStep.sendCommand(cmd, "log");
   }
 
   async stopTracking() {
-    await this.sendCommand(stopTrackingCommand);
+    await this.onStep.sendCommand(stopTrackingCommand);
     await this.waitForStatus({
       test: ({ status }) => !status.tracking,
       error: "Failed to stop tracking.",
@@ -313,7 +306,7 @@ export class MountControl {
   }
 
   async startAlignment(stars: number) {
-    await this.sendCommand(buildStartAlignmentCommand(stars));
+    await this.onStep.sendCommand(buildStartAlignmentCommand(stars));
     await this.waitForStatus({
       test: (status) => status.status.aligning,
       error: "Failed to start alignment",
@@ -333,7 +326,7 @@ export class MountControl {
   }
 
   async acceptAlignment() {
-    await this.sendCommand(acceptAlignmentCommand);
+    await this.onStep.sendCommand(acceptAlignmentCommand);
     await this.waitForStatus({
       test: (status) => !status.status.aligning,
       error: "Failed to accept alignment",
@@ -341,12 +334,12 @@ export class MountControl {
   }
 
   async setParkingLocation() {
-    await this.sendCommand(setParkingLocationCommand);
+    await this.onStep.sendCommand(setParkingLocationCommand);
     await this.refreshStatus();
   }
 
   async park() {
-    await this.sendCommand(parkCommand);
+    await this.onStep.sendCommand(parkCommand);
 
     await this.waitForStatus({
       test: ({ status }) => {
@@ -365,7 +358,7 @@ export class MountControl {
   }
 
   async unPark() {
-    await this.sendCommand(unparkCommand);
+    await this.onStep.sendCommand(unparkCommand);
     await this.waitForStatus({
       test: ({ status }) => !status.parked,
       maxSeconds: 5,
@@ -374,12 +367,12 @@ export class MountControl {
   }
 
   async changeTrackingType(mode: TrackingModes) {
-    await this.sendCommand(buildTrackingTypeCommand(mode));
+    await this.onStep.sendCommand(buildTrackingTypeCommand(mode));
     await this.refreshStatus();
   }
 
   async estop() {
-    await this.sendCommand(estopCommand);
+    await this.onStep.sendCommand(estopCommand);
     this.onError(
       "An E-Stop command has been sent to the mount. Hope everything's ok."
     );

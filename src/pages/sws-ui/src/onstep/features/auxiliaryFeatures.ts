@@ -22,14 +22,11 @@ class AuxiliaryFeatureScan implements Queryable {
   get feature() {
     return this._feature;
   }
+
   handleResponse(response: string): void {
-    const [name, _purpose] = response?.split(",");
+    const [name, _purpose] = response?.split(",") ?? [];
 
-    if (!response) {
-      return;
-    }
-
-    if (response.length !== 2) {
+    if (!name || !_purpose) {
       return;
     }
 

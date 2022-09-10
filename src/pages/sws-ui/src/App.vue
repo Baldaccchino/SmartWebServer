@@ -31,7 +31,7 @@ const onStep = new OnStep(api, onError).onStatusUpdate(
 );
 onBeforeUnmount(() => onStep.disconnect());
 
-const control = new MountControl(api, onStep, onError)
+const control = new MountControl(onStep, onError)
   // after a goto, the user probably wants to be back on the control page.
   // we'll push them to the control page after a goto completion.
   .onAfterGoto(() => router.push({ name: "control" }));
