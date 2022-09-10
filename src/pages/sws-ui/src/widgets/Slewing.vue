@@ -36,7 +36,7 @@ Widget(width="full")
         :loading="syncing"
         :disabled="!canSlew"
       ) 
-        ArrowPathIcon.w-5.h-5
+        CursorArrowRaysIcon.w-5.h-5
 
       ControlButton(
         @mousedown="slew(['w'])"
@@ -83,7 +83,7 @@ Widget(width="full")
 import Widget from "../components/Widget.vue";
 import Heading from "../components/Heading.vue";
 import ControlButton from "../components/ControlButton.vue";
-import { ArrowPathIcon } from "@heroicons/vue/24/outline";
+import { CursorArrowRaysIcon } from "@heroicons/vue/24/outline";
 import Toggles from "../components/Toggles.vue";
 import {
   type Direction,
