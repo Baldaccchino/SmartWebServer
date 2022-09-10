@@ -10,7 +10,7 @@ import FullScreen from "./components/FullScreen.vue";
 import SerialDown from "./components/SerialDown.vue";
 import { toast } from "./utils/toast";
 import NetworkDown from "./components/NetworkDown.vue";
-import { MountStatus } from "./types";
+import type { MountStatus } from "./types";
 
 const router = useRouter();
 const networkError = ref(false);
