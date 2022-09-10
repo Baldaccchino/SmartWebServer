@@ -1,6 +1,6 @@
 import { buildSlewCommand } from "../onstep/commands";
 import { Direction } from "../types";
-import { OnStep } from "./commander";
+import { OnStep } from "./onStep";
 
 export class Search {
   private stopped = false;

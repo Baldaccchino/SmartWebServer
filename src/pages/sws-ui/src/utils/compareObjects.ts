@@ -28,3 +28,7 @@ function isObject(object: object) {
 export function clone(object: object) {
   return JSON.parse(JSON.stringify(object));
 }
+
+export function times(num: number) {
+  return [...Array(num).keys()];
+}
