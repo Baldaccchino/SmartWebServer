@@ -1,11 +1,13 @@
 import { inlineAssets, generateHeaderFile } from "./build/plugins";
 import { defineConfig, loadEnv } from "vite";
+import vueJsx from "@vitejs/plugin-vue-jsx";
 import vue from "@vitejs/plugin-vue";
 import analyze from "rollup-plugin-analyzer";
 
 export default defineConfig(({ mode }) => ({
   plugins: [
     vue(),
+    vueJsx(),
     inlineAssets,
     generateHeaderFile,
     analyze({

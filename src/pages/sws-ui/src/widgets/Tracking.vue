@@ -13,6 +13,7 @@ Widget(width="half")
       :options="trackTypeOptions"
       :onChange="v => changeSpeed(v)"
       :value="status.tracking.type"
+      :disabled="!status.status.tracking"
     )
 </template>
 
@@ -22,6 +23,7 @@ import Widget from "../components/Widget.vue";
 import Toggle from "../components/Toggle.vue";
 import { StarIcon, MoonIcon, SunIcon } from "@heroicons/vue/24/outline";
 import { type ValidMountStatus, type TrackingModes } from "../types";
+import KingIcon from "../components/KingIcon";
 import { MountControl } from "../onstep/mountControl";
 import Toggles from "../components/Toggles.vue";
 
@@ -38,6 +40,7 @@ const trackTypeOptions = [
   { icon: StarIcon, value: "sidereal" as const },
   { icon: MoonIcon, value: "lunar" as const },
   { icon: SunIcon, value: "solar" as const },
+  { icon: KingIcon, value: "king" as const },
 ];
 
 async function changeSpeed(v: TrackingModes) {
