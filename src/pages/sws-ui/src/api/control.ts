@@ -64,6 +64,10 @@ export class MountControl {
     this.onStepStatus = new OnStepStatus(this.onStep);
   }
 
+  setSwsVersion(v: string) {
+    this.onStepStatus.setSwsVersion(v);
+  }
+
   public get commandLogs() {
     return this.onStep.commandLogs;
   }
