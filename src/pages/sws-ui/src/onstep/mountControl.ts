@@ -290,7 +290,6 @@ export class MountControl {
     });
 
     this._onAfterGoto?.();
-    this._onAfterGoto = undefined;
   }
 
   async sendCommand(cmd: string) {
