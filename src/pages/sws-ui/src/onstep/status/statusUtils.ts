@@ -1,10 +1,4 @@
-import {
-  Coordinate,
-  MaxSlewSpeed,
-  MountType,
-  RateComp,
-  TrackingModes,
-} from "../../types";
+import { Coordinate, MaxSlewSpeed, TrackingModes } from "../../types";
 
 function clamp(n: number, min = 0, max: number) {
   return Math.max(Math.min(n, max), min);
