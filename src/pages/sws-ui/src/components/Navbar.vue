@@ -59,8 +59,25 @@ disclosure.bg-gray-800.sticky.top-0.z-50(as="nav", v-slot="{ open }")
 
           a.flex.flex-col.justify-center
             .flex.space-x-2
+              .flex.flex-col.justify-center
+                Menu(
+                  v-if="lastError"
+                  :items=`[
+                    { type: 'info', title: lastError }
+                  ]`
+                )
+                  template(#button)
+                    BellAlertIcon.h-8.w-8.text-red-300.hover_text-red-600.cursor-pointer.transition
+
               .flex.flex-col.justify-center.hidden.md_flex
-                Menu
+                Menu(
+                  :items=`[
+                    { type: 'router', title: 'WiFi Settings', route: { name: 'wifi' }, icon: WifiIcon },
+                    { type: 'router', title: 'Mount Settings', route: { name: 'settings' }, icon: GlobeAmericasIcon },
+                    { type: 'router', title: 'Terminal', route: { name: 'terminal' }, icon: CommandLineIcon },
+                    { type: 'link', title: 'Help', url: 'https://onstep.groups.io/g/main/wiki/5650', newTab: true, icon: QuestionMarkCircleIcon },
+                  ]`
+                )
                   template(#button)
                     Cog6ToothIcon.h-8.h-8.text-white
 
@@ -113,18 +130,24 @@ import {
   XMarkIcon,
   Cog6ToothIcon,
   Bars3Icon,
+  BellAlertIcon,
+  WifiIcon,
   ArrowTrendingUpIcon,
+  GlobeAmericasIcon,
+  CommandLineIcon,
+  QuestionMarkCircleIcon,
 } from "@heroicons/vue/24/outline";
 import { ExclamationCircleIcon } from "@heroicons/vue/24/solid";
 import { RouterLink } from "vue-router";
 import type { ValidMountStatus } from "../types";
 import logo from "../assets/onstep.png";
-import { MountControl } from "../onstep/mountControl";
 import Menu from "./Menu.vue";
+import { useOnstep } from "../composables/useOnstep";
+
+const { control, lastError } = useOnstep();
 
 const props = defineProps<{
   status: ValidMountStatus;
-  control: MountControl;
 }>();
 
 const navigation: {

@@ -11,7 +11,7 @@ Widget(width="half")
   .flex.justify-center.mb-6
     Toggle(
       :modelValue="status.status.parked"
-      :onChange="setParking"
+      :onChange="parkUnpark"
     )
 
   .flex.justify-center
@@ -27,36 +27,34 @@ import { computed, ref } from "vue";
 import Widget from "../components/Widget.vue";
 import Toggle from "../components/Toggle.vue";
 import { type ValidMountStatus } from "../types";
-import { MountControl } from "../onstep/mountControl";
 import ControlButton from "../components/ControlButton.vue";
 import Modal from "../components/Modal.vue";
+import { useLoading } from "../composables/loading";
+import { useOnstep } from "../composables/useOnstep";
 
+const { control } = useOnstep();
 const props = defineProps<{
-  control: MountControl;
   status: ValidMountStatus;
 }>();
 
 const settingParkLocation = ref(false);
-const confirm = ref<InstanceType<typeof Modal> | null>(null);
+const confirm = ref<InstanceType<typeof Modal>>(null!);
 
-function setParking(v: boolean) {
-  return v ? props.control.park() : props.control.unPark();
+function parkUnpark(v: boolean) {
+  return v ? control.park() : control.unPark();
 }
 
 const title = computed(() =>
   props.status.status.parked ? "Parked" : "Not Parked"
 );
 
-async function setParkLocation() {
-  if (!(await confirm.value?.awaitAnswer())) {
-    return;
-  }
+function setParkLocation() {
+  return useLoading(settingParkLocation, async () => {
+    if (!(await confirm.value.awaitAnswer())) {
+      return;
+    }
 
-  try {
-    settingParkLocation.value = true;
-    await props.control.setParkingLocation();
-  } finally {
-    settingParkLocation.value = false;
-  }
+    await control.setParkingLocation();
+  });
 }
 </script>

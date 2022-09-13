@@ -6,7 +6,7 @@ span.relative.z-0.inline-flex.shadow-sm.rounded-md
     :square="true"
     :disabled="disabled"
     :active="value === option.value"
-    :loading="loading && loadingValue === option.value"
+    :loading="loading === option.value"
     :class=`[
       i === 0 
         ? 'rounded-l-md border-r-1 border-y-0 border-l-0 border-red-300'
@@ -25,10 +25,10 @@ span.relative.z-0.inline-flex.shadow-sm.rounded-md
 
 <script setup lang="ts">
 import { type FunctionalComponent, ref } from "vue";
+import { useNullableLoading } from "../composables/loading";
 import ControlButton from "./ControlButton.vue";
 
-const loadingValue = ref<string | null | number>(null);
-const loading = ref(false);
+const loading = ref<string | null | number>(null);
 
 const props = defineProps<{
   onChange: (v: any) => Promise<void>;
@@ -42,13 +42,7 @@ const props = defineProps<{
 }>();
 
 async function change(v: string | number) {
-  try {
-    loading.value = true;
-    loadingValue.value = v;
-    await props.onChange(v);
-  } finally {
-    loading.value = false;
-    loadingValue.value = null;
-  }
+  loading.value = v;
+  return useNullableLoading(loading, () => props.onChange(v));
 }
 </script>

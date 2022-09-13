@@ -26,14 +26,16 @@ import { type ValidMountStatus, type TrackingModes } from "../types";
 import KingIcon from "../components/KingIcon";
 import { MountControl } from "../onstep/mountControl";
 import Toggles from "../components/Toggles.vue";
+import { useOnstep } from "../composables/useOnstep";
+
+const { control } = useOnstep();
 
 const props = defineProps<{
-  control: MountControl;
   status: ValidMountStatus;
 }>();
 
 function setTracking(v: boolean) {
-  return v ? props.control.startTracking() : props.control.stopTracking();
+  return v ? control.startTracking() : control.stopTracking();
 }
 
 const trackTypeOptions = [
@@ -44,7 +46,7 @@ const trackTypeOptions = [
 ];
 
 async function changeSpeed(v: TrackingModes) {
-  return props.control.changeTrackingType(v);
+  return control.changeTrackingType(v);
 }
 
 const title = computed(() =>

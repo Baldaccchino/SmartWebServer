@@ -1,9 +1,10 @@
 import { Mutex } from "async-mutex";
 import { MountStatus } from "../types";
 import { API } from "../api/api";
-import { Command, validateCommand } from "./commands/command";
+import { Command } from "./commands/command";
 import { MountFeatures, OnStepStatus } from "./onStepStatus";
 
+type ShouldLog = "log" | "nolog";
 export class OnStep {
   public commandLogs: {
     command: string;
@@ -38,6 +39,9 @@ export class OnStep {
   getValidStatus() {
     const status = this._status.getValidStatus();
     if (!status) {
+      this.onError(
+        `Attempted to access mount status, but was unable to get a valid status. The mount might be disconnected.`
+      );
       throw new Error("Attempted to get status before it was available.");
     }
     return status;
@@ -59,12 +63,14 @@ export class OnStep {
    * Sends an array of commands to OnStep. It returns the command responses
    * in an array of the same order as supplied.
    */
-  async sendCommandArray(cmds: string[]) {
+  async sendCommandArray(cmds: string[], shouldLog: ShouldLog = "nolog") {
     const commands = cmds.map((c, i) => new Command(c, i.toString(), i));
     const response = await this.api.get<Record<string, string>>(
       "ajax/cmds",
       Object.fromEntries(commands.map((c) => c.commandPayload))
     );
+
+    this.log(commands, response, shouldLog);
 
     return commands.map((c) => c.getResponseValue(response));
   }
@@ -83,8 +89,11 @@ export class OnStep {
   ): Promise<Record<TFriendlyCommandName, TResponse>> {
     // { [TFriendlyCommandName]: new Command(TCommand) }
     const commands = Object.entries(cmds).map(([returnKey, command], i) => {
-      this.validateCommand(command as TFriendlyCommandName);
-      return new Command(command as TFriendlyCommandName, returnKey, i);
+      return new Command(
+        command as TFriendlyCommandName,
+        returnKey,
+        i
+      ).validateCommand(this.onError);
     });
 
     // send the response in format { [cmd_${i}]: TCommand }
@@ -98,54 +107,34 @@ export class OnStep {
       commands.map((c) => c.getResponseEntriy(response))
     );
 
+    this.log(commands, response, shouldLog);
+
+    return commandResponse;
+  }
+
+  private log(
+    commands: Command[],
+    response: Record<string, string>,
+    shouldLog: ShouldLog
+  ) {
     if (shouldLog === "log") {
       this.commandLogs.unshift(
         ...commands.map((c) => c.getCommandLogs(response))
       );
     }
-
-    return commandResponse;
   }
 
   /**
    * Send a singular command to the mount. It returns the command response.
    */
-  async sendCommand(cmd: string, shouldLogCommand: "log" | "nolog" = "nolog") {
-    this.validateCommand(cmd);
-
-    const response = (
-      await this.rawApiRequest("ajax/cmd", {
-        cmd,
-      })
-    ).data;
-
-    if (shouldLogCommand === "log") {
-      this.commandLogs.unshift({
-        command: cmd,
-        system: false,
-        response,
-        date: new Date(),
-      });
-    }
-
-    return response;
+  async sendCommand(cmd: string, shouldLog: ShouldLog = "nolog") {
+    return (await this.sendCommandArray([cmd], shouldLog))[0];
   }
 
-  private validateCommand(cmd: string) {
-    const result = validateCommand(cmd);
-    if (result.valid) {
-      return;
-    }
-
-    this.onError(result.error);
-    throw new Error("Invalid command");
-  }
-
+  /**
+   * thinly wrap the API class in a mutex to ensure only one request in flight at a time.
+   */
   private apiRequest<TApiData>(ep: string, data: object): Promise<TApiData> {
     return this.mutex.runExclusive(() => this.api.get<TApiData>(ep, data));
-  }
-
-  private rawApiRequest(ep: string, data: object) {
-    return this.mutex.runExclusive(() => this.api.getWithoutParse(ep, data));
   }
 }

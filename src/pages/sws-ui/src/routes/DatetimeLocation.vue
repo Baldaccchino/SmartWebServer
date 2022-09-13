@@ -104,14 +104,10 @@ Columns
         @click="saveLocation"
       ) Save Location
 
-
-
-
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref, toRaw } from "vue";
-import { MountControl } from "../onstep/mountControl";
 import ControlButton from "../components/ControlButton.vue";
 import type { ValidMountStatus } from "../types";
 import { formatDate } from "../utils/formatDate";
@@ -121,9 +117,12 @@ import InputField from "../components/InputField.vue";
 import { objectsEqual } from "../utils/compareObjects";
 import Columns from "../components/Columns.vue";
 import Heading from "../components/Heading.vue";
+import { useLoading } from "../composables/loading";
+import { useOnstep } from "../composables/useOnstep";
+
+const { control } = useOnstep();
 
 const props = defineProps<{
-  control: MountControl;
   status: ValidMountStatus;
 }>();
 
@@ -140,13 +139,10 @@ const dateHasDrifted = computed(() => {
   return props.status.dateTime.datesAreOutOfSync;
 });
 
-async function saveLocation() {
-  savingLocation.value = true;
-  try {
-    await props.control.setLocation(currentLocation.value);
-  } finally {
-    savingLocation.value = false;
-  }
+function saveLocation() {
+  return useLoading(savingLocation, () =>
+    control.setLocation(currentLocation.value)
+  );
 }
 
 async function setManualTimezone() {
@@ -157,13 +153,7 @@ async function setManualTimezone() {
 }
 
 async function sync(offset?: string) {
-  syncingTime.value = true;
-
-  try {
-    await props.control.setDateTime(offset);
-  } finally {
-    syncingTime.value = false;
-  }
+  return useLoading(syncingTime, () => control.setDateTime(offset));
 }
 
 onMounted(() => {

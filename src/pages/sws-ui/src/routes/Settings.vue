@@ -147,9 +147,12 @@ import ControlButton from "../components/ControlButton.vue";
 import InputField from "../components/InputField.vue";
 import { objectsEqual } from "../utils/compareObjects";
 import Columns from "../components/Columns.vue";
+import { useLoading } from "../composables/loading";
+import { useOnstep } from "../composables/useOnstep";
+
+const { control } = useOnstep();
 
 const props = defineProps<{
-  control: MountControl;
   status: ValidMountStatus;
 }>();
 
@@ -186,37 +189,30 @@ onMounted(() => {
   mutableMount.value = toRaw(props.status.mount);
 });
 
-async function saveMountSettings() {
-  if (!mutableMount.value) {
+function saveMountSettings() {
+  const mount = mutableMount.value;
+  if (!mount) {
     return;
   }
-  savingMountSettings.value = true;
-  try {
-    await props.control.updateMountSettings(mutableMount.value);
-  } finally {
-    savingMountSettings.value = false;
-  }
+
+  return useLoading(savingMountSettings, () =>
+    control.updateMountSettings(mount)
+  );
 }
 
 function invalidMount() {
   return Promise.reject("foo");
 }
 
-async function adjustTrackingRate(rate: "faster" | "slower" | "reset") {
-  adjustingTrackingRate.value = true;
-  try {
-    await props.control.adjustTrackingRate(rate);
-  } finally {
-    adjustingTrackingRate.value = false;
-  }
+function adjustTrackingRate(rate: "faster" | "slower" | "reset") {
+  return useLoading(adjustingTrackingRate, () =>
+    control.adjustTrackingRate(rate)
+  );
 }
 
 async function setMeridianAutoFlipNow() {
-  settingMeridianFlipNow.value = true;
-  try {
-    await props.control.setMeridianAutoFlipNow();
-  } finally {
-    settingMeridianFlipNow.value = false;
-  }
+  return useLoading(settingMeridianFlipNow, () =>
+    control.setMeridianAutoFlipNow()
+  );
 }
 </script>

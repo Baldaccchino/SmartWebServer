@@ -90,16 +90,17 @@ import {
   type ValidMountStatus,
   type MaxSlewSpeed,
 } from "../types";
-import { MountControl } from "../onstep/mountControl";
 import { computed, ref } from "vue";
+import { useLoading } from "../composables/loading";
+import { useOnstep } from "../composables/useOnstep";
 
+const { control } = useOnstep();
 const props = defineProps<{
-  control: MountControl;
   status: ValidMountStatus;
 }>();
 
 function changeSlewingSpeed(speed: MaxSlewSpeed) {
-  return props.control.changeMaxSlewSpeed(speed);
+  return control.changeMaxSlewSpeed(speed);
 }
 
 const maxSlewOptions = ref([
@@ -138,23 +139,18 @@ const speedOptions = ["V. Slow", "Slow", "Normal", "Fast", "V. Fast"].map(
   })
 );
 
-async function sync() {
-  try {
-    syncing.value = true;
-    await props.control.syncWith();
-  } finally {
-    syncing.value = false;
-  }
+function sync() {
+  return useLoading(syncing, () => control.syncWith());
 }
 
 function slew(dirs: Direction[]) {
-  return props.control.slew(dirs, true);
+  return control.slew(dirs, true);
 }
 function stop(dirs: Direction[]) {
-  return props.control.slew(dirs, false);
+  return control.slew(dirs, false);
 }
 
 function speedChange(speed: number) {
-  return props.control.changeSpeed(speed);
+  return control.changeSpeed(speed);
 }
 </script>

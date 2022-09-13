@@ -33,32 +33,19 @@ Columns
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import InputField from "../components/InputField.vue";
-import { MountControl } from "../onstep/mountControl";
 import ControlButton from "../components/ControlButton.vue";
 import Widget from "../components/Widget.vue";
 import Columns from "../components/Columns.vue";
+import { useLoading } from "../composables/loading";
+import { useOnstep } from "../composables/useOnstep";
 
-const props = defineProps<{
-  control: MountControl;
-}>();
-
+const { control } = useOnstep();
 const cmd = ref("");
 const loading = ref(false);
 const upIndex = ref(0);
 
-async function send() {
-  if (["cls", "clear"].includes(cmd.value)) {
-    props.control.clearLogs();
-    return;
-  }
-
-  try {
-    loading.value = true;
-    await props.control.sendCommand(cmd.value.trim());
-    cmd.value = "";
-  } finally {
-    loading.value = false;
-  }
+function send() {
+  return useLoading(loading, () => control.sendCommand(cmd.value));
 }
 
 const commands = computed(() => {
@@ -69,11 +56,11 @@ const commands = computed(() => {
         command: "Loading.....",
         response: null,
       },
-      ...props.control.commandLogs,
+      ...control.commandLogs,
     ];
   }
 
-  return props.control.commandLogs;
+  return control.commandLogs;
 });
 
 function showHistory(direction: "up" | "down") {
@@ -86,10 +73,10 @@ function showHistory(direction: "up" | "down") {
     0,
     Math.min(
       direction === "up" ? upIndex.value + 1 : upIndex.value - 1,
-      props.control.commandLogs.length - 1
+      control.commandLogs.length - 1
     )
   );
 
-  cmd.value = props.control.commandLogs[upIndex.value]?.command;
+  cmd.value = control.commandLogs[upIndex.value]?.command;
 }
 </script>

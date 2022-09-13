@@ -112,12 +112,12 @@ import SelectBox from "../components/SelectBox.vue";
 import Modal from "../components/Modal.vue";
 import Columns from "../components/Columns.vue";
 import Toggles from "../components/Toggles.vue";
+import { useNullableLoading } from "../composables/loading";
+import { useOnstep } from "../composables/useOnstep";
 
 const { messier, brightStars } = catalog;
 
-const props = defineProps<{
-  control: MountControl;
-}>();
+const { control } = useOnstep();
 
 const starSelectTypes = Object.entries(starTypes).map(([value, name]) => ({
   name,
@@ -204,36 +204,33 @@ async function removeFromLib(star: Star) {
     return;
   }
 
-  try {
-    removing.value = star.name.toString();
+  removing.value = star.name.toString();
+
+  return useNullableLoading(removing, async () => {
     await recentStars.removeStar((s) => {
       return s.dec === star.dec && s.ra === star.ra && s.name === star.name;
     });
 
     await recentStars.refreshList();
-  } finally {
-    removing.value = null;
-  }
+  });
 }
 
 async function goTo(star: Star) {
   loading.value = star.name;
 
-  if (star.name === manualGoTo.name) {
-    recentStars.addStar({
-      ...manualGoTo,
-      type: manualStarSelectType.value.value,
-      name: manualGoToName.value,
-    });
+  return useNullableLoading(loading, async () => {
+    if (star.name === manualGoTo.name) {
+      recentStars.addStar({
+        ...manualGoTo,
+        type: manualStarSelectType.value.value,
+        name: manualGoToName.value,
+      });
 
-    recentStars.storeList().then(() => recentStars.refreshList());
-  }
+      await recentStars.storeList().then(() => recentStars.refreshList());
+    }
 
-  try {
-    await props.control.goToStar(star);
-  } finally {
-    loading.value = null;
-  }
+    await control.goToStar(star);
+  });
 }
 
 onMounted(() => {

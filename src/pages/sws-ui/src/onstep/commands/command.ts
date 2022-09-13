@@ -9,11 +9,13 @@ export function validateCommand(cmd: string) {
 
 export class Command {
   private cmdKey;
+  public readonly command;
   constructor(
-    public readonly command: string,
+    command: string,
     private returnKey: string,
     private index: number
   ) {
+    this.command = command.trim();
     this.cmdKey = `cmd_${this.index}`;
   }
 
@@ -36,5 +38,14 @@ export class Command {
       system: true,
       date: new Date(),
     };
+  }
+  validateCommand(onError: (e: string) => void) {
+    const result = validateCommand(this.command);
+    if (result.valid) {
+      return this;
+    }
+
+    onError(result.error);
+    throw new Error(result.error);
   }
 }

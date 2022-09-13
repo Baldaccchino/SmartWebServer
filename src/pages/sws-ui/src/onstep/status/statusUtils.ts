@@ -81,6 +81,9 @@ export function getAlignment(alignStars: string) {
   return { maxStars, currentStar, lastRequiredStar };
 }
 export function getLastError(mountStatus: string) {
+  const errNum =
+    mountStatus.charCodeAt(mountStatus.length - 1) - "0".charCodeAt(0);
+
   return (
     [
       false as const,
@@ -99,8 +102,8 @@ export function getLastError(mountStatus: string) {
       "Weather sensor init failed",
       "Time or loc. not updated",
       "Init NV/EEPROM error",
-      "Unknown Error, code",
-    ][parseInt(mountStatus.slice(-1))] ?? false
+      `Unknown Error, ${errNum}`,
+    ][errNum] ?? "Unknown Error"
   );
 }
 

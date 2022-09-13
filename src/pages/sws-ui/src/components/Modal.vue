@@ -61,7 +61,7 @@ TransitionRoot(as="template", :show="isOpen")
 
                   button.mt-3.w-full.inline-flex.justify-center.rounded-md.border.border-rose-300.shadow-sm.px-4.py-2.bg-rose-200.text-base.font-medium.text-gray-700.hover_text-gray-500.focus_outline-none.focus_ring-2.focus_ring-offset-2.focus_ring-indigo-500.sm_mt-0.sm_w-auto.sm_text-sm(
                     type="button", 
-                    @click="setIsOpen(false)"
+                    @click="cancel"
                   ) {{ cancelText }}
 
 </template>
@@ -102,6 +102,11 @@ const isOpen = ref(false);
 watchEffect(() => {
   setIsOpen(props.open);
 });
+
+function cancel() {
+  confirmPromise.value?.(false);
+  setIsOpen(false);
+}
 
 function setIsOpen(v: boolean) {
   isOpen.value = v;

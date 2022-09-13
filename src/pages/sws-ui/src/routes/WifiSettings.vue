@@ -182,6 +182,7 @@ import Toggle from "../components/Toggle.vue";
 import ControlButton from "../components/ControlButton.vue";
 import { AxiosError } from "axios";
 import { objectsEqual, clone } from "../utils/compareObjects";
+import { useLoading } from "../composables/loading";
 
 const wifiApi = new WifiApi(api);
 
@@ -190,10 +191,10 @@ const ipValidation = [
   /^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$/,
 ] as const;
 
-defineProps<{}>();
-
 const loadingNetworks = ref(false);
 const loadingConfig = ref(true);
+const savingAp = ref(false);
+const savingStation = ref(false);
 
 const loginRequired = ref(false);
 const loginFail = ref(false);
@@ -209,6 +210,10 @@ const newWifi = ref<Item | null>(null);
 const newWifiPassword = ref("");
 const newApPassword = ref("");
 const newWifiPasswordModal = ref<InstanceType<typeof Modal>>(null!);
+
+function is401(e: unknown) {
+  return (e as AxiosError)?.response?.status === 401;
+}
 
 const selectedNetwork = computed<Item | null>(() => {
   const ssid = mutableWifi.value?.station.network.ssid;
@@ -236,70 +241,64 @@ const staChanged = computed(
     !objectsEqual(wifi.value?.station ?? {}, mutableWifi.value?.station ?? {})
 );
 
-const savingAp = ref(false);
-const savingStation = ref(false);
 async function saveAp() {
-  if (!mutableWifi.value) {
+  const value = mutableWifi.value;
+  if (!value) {
     return;
   }
 
-  try {
-    savingAp.value = true;
-    wifi.value = await wifiApi.updateAp(
-      mutableWifi.value.accessPoint,
-      newApPassword.value
-    );
+  return useLoading(savingAp, async () => {
+    wifi.value = await wifiApi.updateAp(value.accessPoint, newApPassword.value);
     newApPassword.value = "";
-  } finally {
-    savingAp.value = false;
-  }
+  });
 }
 
 async function saveStation() {
-  if (!mutableWifi.value) {
+  const wifiValue = mutableWifi.value;
+  if (!wifiValue) {
     return;
   }
 
-  try {
-    savingStation.value = true;
-    wifi.value = await wifiApi.updateStation(
-      mutableWifi.value.station,
+  wifi.value = await useLoading(savingStation, async () => {
+    const value = await wifiApi.updateStation(
+      wifiValue.station,
       newWifiPassword.value
     );
+
     newWifiPassword.value = "";
-  } finally {
-    savingStation.value = false;
-  }
+    return value;
+  });
 }
 
-async function doLogin() {
-  try {
-    loggingIn.value = true;
-    loginFail.value = false;
-    wifi.value = await wifiApi.getWifiSettings(login.value);
-    mutableWifi.value = clone(wifi.value);
-    loginRequired.value = false;
-    login.value = "";
-  } catch (e) {
-    loginRequired.value = true;
-    loginFail.value = true;
-  } finally {
-    loggingIn.value = false;
-  }
-}
-
-async function loadWifiSettings() {
-  try {
-    loadingConfig.value = true;
-    wifi.value = await wifiApi.getWifiSettings();
-    mutableWifi.value = clone(wifi.value);
-  } catch (e) {
-    if (is401(e)) {
+function doLogin() {
+  return useLoading(
+    loggingIn,
+    async () => {
+      wifi.value = await wifiApi.getWifiSettings(login.value);
+      mutableWifi.value = clone(wifi.value);
+      loginRequired.value = false;
+      login.value = "";
+    },
+    (e) => {
       loginRequired.value = true;
+      loginFail.value = true;
     }
-  } finally {
-    loadingConfig.value = false;
-  }
+  );
+}
+
+function loadWifiSettings() {
+  return useLoading(
+    loadingConfig,
+    async () => {
+      wifi.value = await wifiApi.getWifiSettings();
+      mutableWifi.value = clone(wifi.value);
+    },
+    (e) => {
+      if (is401(e)) {
+        loginRequired.value = true;
+      }
+    }
+  );
 }
 
 onMounted(loadWifiSettings);
@@ -332,32 +331,25 @@ async function chooseNetwork(v: Item | null) {
   newWifi.value = null;
 }
 
-function is401(e: unknown) {
-  return (e as AxiosError)?.response?.status === 401;
-}
-
-async function logOut() {
-  try {
-    loggingOut.value = true;
-    await wifiApi.wifiLogout();
-    loginRequired.value = true;
-  } catch (e) {
-    if (is401(e)) {
+function logOut() {
+  return useLoading(
+    loggingOut,
+    async () => {
+      await wifiApi.wifiLogout();
       loginRequired.value = true;
-      wifi.value = null;
-    } else {
-      throw e;
+    },
+    (e) => {
+      if (is401(e)) {
+        loginRequired.value = true;
+        wifi.value = null;
+      }
     }
-  } finally {
-    loggingOut.value = false;
-  }
+  );
 }
 
 async function refreshWifi() {
-  try {
-    loadingNetworks.value = true;
-
-    networks.value = Object.entries(await wifiApi.scanForWifiNetworks()).map(
+  networks.value = await useLoading(loadingNetworks, async () => {
+    return Object.entries(await wifiApi.scanForWifiNetworks()).map(
       ([network, secure]) => ({
         name: network,
         checked: network === selectedNetwork.value?.name,
@@ -365,8 +357,6 @@ async function refreshWifi() {
         icon: secure === "secured" ? ("lock" as const) : ("unlock" as const),
       })
     );
-  } finally {
-    loadingNetworks.value = false;
-  }
+  });
 }
 </script>

@@ -38,14 +38,15 @@ Widget(width="half")
 import Widget from "../components/Widget.vue";
 import { StarIcon } from "@heroicons/vue/24/solid";
 import { type ValidMountStatus } from "../types";
-import { MountControl } from "../onstep/mountControl";
 import ControlButton from "../components/ControlButton.vue";
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
+import { useNullableLoading } from "../composables/loading";
+import { useOnstep } from "../composables/useOnstep";
 
+const { control } = useOnstep();
 const router = useRouter();
 const props = defineProps<{
-  control: MountControl;
   status: ValidMountStatus;
 }>();
 
@@ -54,26 +55,22 @@ const alignmentStars = computed(() => props.status.alignment.lastRequiredStar);
 const aligning = computed(() => props.status.status.aligning);
 const loading = ref<null | number>(null);
 
-async function accept() {
+function accept() {
   loading.value = alignmentStars.value;
-  try {
-    await props.control.nextStarAlignment();
+  return useNullableLoading(loading, async () => {
+    await control.nextStarAlignment();
 
     if (currentStar.value < alignmentStars.value + 1) {
       router.push({ name: "library" });
     }
-  } finally {
-    loading.value = null;
-  }
+  });
 }
 
-async function align(stars: number) {
+function align(stars: number) {
   loading.value = stars;
-  try {
-    await props.control.startAlignment(stars);
+  return useNullableLoading(loading, async () => {
+    await control.startAlignment(stars);
     router.push({ name: "library" });
-  } finally {
-    loading.value = null;
-  }
+  });
 }
 </script>

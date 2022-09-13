@@ -29,23 +29,23 @@ Widget(width="half")
       ClockIcon.h-5.w-5.text-white.ml-2(v-if="status.status.waitingAtHome")
 
 
-
 </template>
 
 <script setup lang="ts">
 import Widget from "../components/Widget.vue";
 import { type ValidMountStatus, mountHasCompensation } from "../types";
-import { MountControl } from "../onstep/mountControl";
 import { computed, ref } from "vue";
 import ControlButton from "../components/ControlButton.vue";
 import Modal from "../components/Modal.vue";
 import Toggle from "../components/Toggle.vue";
 import { ClockIcon } from "@heroicons/vue/24/outline";
+import { useLoading } from "../composables/loading";
+import { useOnstep } from "../composables/useOnstep";
 
-const confirm = ref<InstanceType<typeof Modal> | null>(null);
+const { control } = useOnstep();
+const confirm = ref<InstanceType<typeof Modal>>(null!);
 
 const props = defineProps<{
-  control: MountControl;
   status: ValidMountStatus;
 }>();
 
@@ -57,40 +57,23 @@ const title = computed(() =>
   props.status.status.home ? "Homed" : "Not Homed"
 );
 
-async function continueGoTo() {
-  continuingGoTo.value = true;
-  try {
-    await props.control.continueGoTo();
-  } finally {
-    continuingGoTo.value = false;
-  }
+function continueGoTo() {
+  return useLoading(continuingGoTo, () => control.continueGoTo());
 }
 
 async function goHome() {
   const fn = props.status.status.home
-    ? () => props.control.startTracking()
-    : () => props.control.goHome();
+    ? () => control.startTracking()
+    : () => control.goHome();
 
-  try {
-    homing.value = true;
-    await fn();
-  } finally {
-    homing.value = false;
-  }
+  return useLoading(homing, fn);
 }
 
 async function setHome() {
-  if (!confirm.value) {
-    throw new Error("Modal was not found.");
+  if (!(await confirm.value.awaitAnswer())) {
+    return;
   }
 
-  if (await confirm.value.awaitAnswer()) {
-    settingHome.value = true;
-    try {
-      await props.control.setNewHome();
-    } finally {
-      settingHome.value = false;
-    }
-  }
+  return useLoading(settingHome, () => control.setNewHome());
 }
 </script>

@@ -22,6 +22,7 @@ SwitchGroup
 <script setup lang="ts">
 import { Switch, SwitchGroup } from "@headlessui/vue";
 import { ref } from "vue";
+import { useLoading } from "../composables/loading";
 import SmallSpinner from "./SmallSpinner.vue";
 
 const emits = defineEmits<{
@@ -33,18 +34,15 @@ const props = defineProps<{
   onChange?: (v: boolean) => Promise<void>;
 }>();
 
-async function changeValue(v: boolean) {
-  loading.value = true;
-  try {
+const loading = ref(false);
+
+function changeValue(v: boolean) {
+  return useLoading(loading, async () => {
     if (!props.onChange) {
       emits("update:modelValue", v);
     } else {
-      await props.onChange?.(v);
+      await props.onChange(v);
     }
-  } finally {
-    loading.value = false;
-  }
+  });
 }
-
-const loading = ref(false);
 </script>

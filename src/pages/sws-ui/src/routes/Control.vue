@@ -1,36 +1,18 @@
 <template lang="pug">
 .flex.flex-col.space-y-2
   Columns
-    Homing(
-      :control="control"
-      :status="status"
-    )
-
-    Parking(
-      :control="control"
-      :status="status"
-    )
+    Homing(:status="status")
+    Parking(:status="status")
 
   Columns
-    Tracking(
-      :control="control"
-      :status="status"
-    )
+    Tracking(:status="status")
+    Alignment(:status="status")
 
-    Alignment(
-      :status="status"
-      :control="control"
-    )
-
-  Slewing(
-    :control="control"
-    :status="status"
-  )
+  Slewing(:status="status")
 
 </template>
 
 <script setup lang="ts">
-import { MountControl } from "../onstep/mountControl";
 import { type ValidMountStatus } from "../types";
 import Tracking from "../widgets/Tracking.vue";
 import Parking from "../widgets/Parking.vue";
@@ -40,7 +22,6 @@ import Alignment from "../widgets/Alignment.vue";
 import Columns from "../components/Columns.vue";
 
 defineProps<{
-  control: MountControl;
   status: ValidMountStatus;
 }>();
 </script>
