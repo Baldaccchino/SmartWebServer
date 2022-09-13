@@ -36,21 +36,6 @@ void ajaxRunCommands()
     www.send(200, "text/plain", data);
 }
 
-void ajaxRunCommand() 
-{
-    String cmd = www.arg("cmd");
-    char result[40] = "";
-    char cmdBuffer[40] = "";
-
-    if (cmd != "") {
-        cmd.toCharArray(cmdBuffer, 40);
-        onStep.command(cmdBuffer, result);
-    }
-
-    sendVersionHeader();
-    www.send(200, "text/plain", result);
-}
-
 void ajaxLibrary() {
     int cat = www.arg("cat").toInt();
     char temp[40]="";

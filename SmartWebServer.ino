@@ -218,7 +218,6 @@ Again:
   www.on("/ajax/wifi", ajaxWifiNetworks);
   www.on("/ajax/wifi/scan", ajaxScanNetworks);
   www.on("/ajax/library", ajaxLibrary);
-  www.on("/ajax/cmd", ajaxRunCommand);
   www.on("/ajax/cmds", ajaxRunCommands);
 
   www.on("/index.htm", handleRoot);

@@ -9,7 +9,6 @@
 void handleNewUi();
 void ajaxWifiNetworks();
 void ajaxScanNetworks();
-void ajaxRunCommand();
 void ajaxRunCommands();
 void ajaxLibrary();
 
