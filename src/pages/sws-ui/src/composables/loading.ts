@@ -12,7 +12,6 @@ export async function useLoading<T = void>(
     onError?.(e);
     throw e;
   } finally {
-    console.log("setting to false");
     loadingRef.value = false;
   }
 }
