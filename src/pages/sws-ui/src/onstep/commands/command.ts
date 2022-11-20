@@ -23,7 +23,7 @@ export class Command {
     return [this.cmdKey, this.command];
   }
 
-  getResponseEntriy(response: Record<string, string>) {
+  getResponseEntry(response: Record<string, string>) {
     return [this.returnKey, this.getResponseValue(response)];
   }
 
@@ -34,11 +34,12 @@ export class Command {
   getCommandLogs(response: Record<string, string>) {
     return {
       command: this.command,
-      response: response[this.cmdKey],
+      response: this.getResponseValue(response),
       system: true,
       date: new Date(),
     };
   }
+
   validateCommand(onError: (e: string) => void) {
     const result = validateCommand(this.command);
     if (result.valid) {

@@ -116,6 +116,7 @@ export function getGuideRate(mountStatus: string) {
     9
   );
 }
+
 export function getDateTime(
   utcDate: string,
   utcTime: string,
@@ -138,6 +139,7 @@ export function getDateTime(
   };
   return dateTime;
 }
+
 export function getTrackingMode(trackValue: number): TrackingModes {
   function checkTrackType(compare: number) {
     return Math.abs(trackValue - compare) < 0.001;
@@ -153,6 +155,7 @@ export function getTrackingMode(trackValue: number): TrackingModes {
     ? "king"
     : "sidereal";
 }
+
 export function getLocation(loc: string): Coordinate {
   const nums = loc
     .split(/[:*]/)
@@ -162,7 +165,8 @@ export function getLocation(loc: string): Coordinate {
 
   return Object.fromEntries(keys.map((key, i) => [key, nums[i]])) as Coordinate;
 }
-function getDate(date: string, time: string) {
+
+export function getDate(date: string, time: string) {
   const [_m, _d, _y] = date.split("/");
 
   const times = time.split(":");

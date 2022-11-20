@@ -104,7 +104,7 @@ export class OnStep {
 
     // zip up the command response into { [TFriendlyCommandName]: TResponse }
     const commandResponse = Object.fromEntries(
-      commands.map((c) => c.getResponseEntriy(response))
+      commands.map((c) => c.getResponseEntry(response))
     );
 
     this.log(commands, response, shouldLog);

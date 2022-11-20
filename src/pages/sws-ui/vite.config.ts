@@ -14,6 +14,9 @@ export default defineConfig(({ mode }) => ({
       summaryOnly: true,
     }),
   ],
+  test: {
+    globals: true,
+  },
   server: {
     proxy: {
       // OnStep responses do not have CORS enabled - we can use Vite to proxy

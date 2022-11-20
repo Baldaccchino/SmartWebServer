@@ -67,7 +67,7 @@ export class AuxiliaryFeature implements Queryable {
   }
 }
 
-function responseValid(s: string) {
+function responseValid(s: string | undefined) {
   return s && s.length === 8;
 }
 
