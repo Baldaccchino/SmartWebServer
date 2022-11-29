@@ -9,9 +9,8 @@ export function validateCommand(cmd: string) {
 
 export class Command {
   private cmdKey;
-  public readonly command;
   constructor(
-    command: string,
+    private command: string,
     private returnKey: string,
     private index: number
   ) {
